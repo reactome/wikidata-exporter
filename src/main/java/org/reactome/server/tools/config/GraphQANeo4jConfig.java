@@ -1,4 +1,4 @@
-package org.sarah.ebi.config;
+package org.reactome.server.tools.config;
 
 import org.neo4j.ogm.config.Configuration;
 import org.neo4j.ogm.session.Session;
