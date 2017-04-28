@@ -153,11 +153,11 @@ public class R_ExportWikiData {
      */
     private static void parseAdditionalArguments(JSAPResult config) {
         outputfilename = config.getString("outfilename");
-        if (outputfilename.length() == 0) {
+        if (outputfilename.length() == 0 || outputfilename == ".") {
             outputfilename = defaultFilename;
         }
         try {
-            fout = new FileWriter(outputfilename, true);
+            fout = new FileWriter(outputfilename);
             out = new BufferedWriter(fout);
         }
         catch (IOException e) {
@@ -228,11 +228,17 @@ public class R_ExportWikiData {
      * @param path ReactomeDB Pathway to output
      */
     private static void outputPath(Pathway path) {
+        String hs = new String("Homo sapiens");
+        if (!path.getSpeciesName().equals(hs)) {
+            System.err.println("Only the Homo sapien species is supported as yet");
+            return;
+        }
         WikiDataExtractor wdExtract = new WikiDataExtractor(path, dbVersion);
         wdExtract.createWikidataEntry();
         try {
             out.write(wdExtract.getWikidataEntry());
             out.newLine();
+            wdExtract.toStdOut();
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());

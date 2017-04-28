@@ -55,13 +55,13 @@ class WikiDataExtractor {
      * Create the wikidata entry using the Reactome Pathway specified in the constructor.
      */
     public void createWikidataEntry(){
-        // cyrrentlt ReactomeBot expects an entry
+        // currently ReactomeBot expects an entry
         // species_code,stableId,Name,Description,[publication;publication;..],goterm,None
         String format = "%s,%s,%s,%s,[%s],%s,None";
 
         String species = "HSA";
         String stId = thisPathway.getStId();
-        String name = thisPathway.getDisplayName();
+        String name = getName();
         String description = composeDescription(name);
         String publications = getPublicationList();
         String goterm = getGoTerm();
@@ -106,6 +106,12 @@ class WikiDataExtractor {
     //////////////////////////////////////////////////////////////////////////////////
 
     // Private functions
+
+    private String getName() {
+        String name = thisPathway.getDisplayName();
+        String name_nocommas = name.replaceAll(",", ";");
+        return name_nocommas;
+    }
 
     private String composeDescription(String name) {
         return "An instance of " + name + " in Homo sapiens";
