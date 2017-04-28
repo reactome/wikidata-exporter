@@ -1,15 +1,12 @@
 package org.reactome.server.tools.config;
 
 import org.neo4j.ogm.config.Configuration;
-import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.reactome.server.graph.config.Neo4jConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -22,12 +19,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableNeo4jRepositories(basePackages = {"org.reactome.server.graph.repository"})
 @EnableSpringConfigured
-public class GraphQANeo4jConfig extends Neo4jConfig {
+public class GraphNeo4jConfig extends Neo4jConfig {
 
     private static final Logger logger = LoggerFactory.getLogger("importLogger");
 
     private SessionFactory sessionFactory;
-    private Session session;
 
     @Bean
     public Configuration getConfiguration() {
@@ -48,18 +44,6 @@ public class GraphQANeo4jConfig extends Neo4jConfig {
             sessionFactory = new SessionFactory(getConfiguration(), "org.reactome.server.graph.domain" );
         }
         return sessionFactory;
-    }
-
-    @Override
-    @Bean
-    @Scope(value = "prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public Session getSession() throws Exception {
-        if (session == null){
-            logger.info("Opening neo4j Session");
-            session = super.getSession();
-        }
-
-        return session;
     }
 
 }

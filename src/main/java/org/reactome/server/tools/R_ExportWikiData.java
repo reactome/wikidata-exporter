@@ -10,20 +10,40 @@ import org.reactome.server.graph.service.GeneralService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.service.SpeciesService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.config.GraphQANeo4jConfig;
+import org.reactome.server.tools.config.GraphNeo4jConfig;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author Sarah Keating <skeating@ebi.ac.uk>
- * @author Antonio Fabregat <fabregat@ebi.ac.uk>
  */
 public class R_ExportWikiData {
 
-    static int level = 0;
-    static int minChildren = 0;
+    private static String outputfilename = "";
+    private static String defaultFilename = "reactome_data.csv";
+
+    // arguments to determine what to output
+    private static long singleId = 0;
+    private static long speciesId = 0;
+    private static long[] multipleIds;
+
+    private enum Status {
+        SINGLE_PATH, ALL_PATWAYS, ALL_PATHWAYS_SPECIES, MULTIPLE_PATHS
+    }
+
+    private static Status outputStatus = Status.SINGLE_PATH;
+
+    private static int dbVersion = 0;
+
+    private static final int width = 70;
+    private static int total;
+
+    private static FileWriter fout;
+    private static BufferedWriter out;
 
     public static void main(String[] args) throws JSAPException {
 
@@ -33,38 +53,213 @@ public class R_ExportWikiData {
                         new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.NOT_REQUIRED, 'b', "port", "The neo4j port"),
                         new FlaggedOption("user", JSAP.STRING_PARSER, "neo4j", JSAP.REQUIRED, 'u', "user", "The neo4j user"),
                         new FlaggedOption("password", JSAP.STRING_PARSER, "reactome", JSAP.REQUIRED, 'p', "password", "The neo4j password"),
+                        new FlaggedOption("outfilename", JSAP.STRING_PARSER, ".", JSAP.REQUIRED, 'o', "output", "The output filename"),
+                        new FlaggedOption("toplevelpath", JSAP.LONG_PARSER, "0", JSAP.NOT_REQUIRED, 't', "toplevelpath", "A single id of a pathway"),
+                        new FlaggedOption("species", JSAP.LONG_PARSER, "0", JSAP.NOT_REQUIRED, 's', "species", "The id of a species"),
                 }
         );
+        FlaggedOption m = new FlaggedOption("multiple", JSAP.LONG_PARSER, null, JSAP.NOT_REQUIRED, 'm', "multiple", "A list of ids of Pathways");
+        m.setList(true);
+        m.setListSeparator(',');
+        jsap.registerParameter(m);
+
         JSAPResult config = jsap.parse(args);
         if (jsap.messagePrinted()) System.exit(1);
 
         //Initialising ReactomeCore Neo4j configuration
-        ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), GraphQANeo4jConfig.class);
+        ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), GraphNeo4jConfig.class);
 
+        DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
         GeneralService genericService = ReactomeGraphCore.getService(GeneralService.class);
+        SpeciesService speciesService = ReactomeGraphCore.getService(SpeciesService.class);
+        SchemaService schemaService = ReactomeGraphCore.getService(SchemaService.class);
+
         System.out.println("Database name: " + genericService.getDBName());
         System.out.println("Database version: " + genericService.getDBVersion());
 
-        DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
+        outputStatus = Status.SINGLE_PATH;
+        parseAdditionalArguments(config);
 
-//        long dbid = 5663205L; // infectious disease
-//        long dbid = 167168L;  // HIV transcription termination (pathway no events)
-//        long dbid = 180627L; // reaction
-//        long dbid = 168275L; // pathway with a single child reaction
-//        long dbid = 168255L; // influenza life cycle - which is where my pathway 168275 comes from
-//        long dbid = 2978092L; // pathway with a catalysis
-//        long dbid = 5619071L; // failed reaction
-//        long dbid = 69205L; // black box event
-//        long dbid = 392023L; // reaction
-//        long dbid = 5602410L; // species genome encoded entity
-//        long dbid = 9609481L; // polymer entity
-//        long dbid = 453279L;// path with black box
-//        long dbid = 76009L; // path with reaction
-//        long dbid = 2022090L; // polymerisation
-//        long dbid = 162585L; //depoly
-//        long dbid = 9719495L;
-//        long dbid = 1280218; // toplevel pathway
+        if (singleArgumentSupplied()) {
+            dbVersion = genericService.getDBVersion();
+
+            switch (outputStatus) {
+                case SINGLE_PATH:
+                    Pathway pathway = null;
+                    total = 1;
+                    try {
+                        pathway = (Pathway) databaseObjectService.findByIdNoRelations(singleId);
+                    } catch (Exception e) {
+                        System.err.println(singleId + " is not the identifier of a valid Pathway object");
+                    }
+                    if (pathway != null) {
+                        outputPath(pathway);
+                        updateProgressBar(1);
+                    }
+                    break;
+                case ALL_PATWAYS:
+                    for (Species s : speciesService.getSpecies()) {
+                        outputPathsForSpecies(s, schemaService, databaseObjectService);
+                    }
+                    break;
+                case ALL_PATHWAYS_SPECIES:
+                    Species species = null;
+                    try {
+                        species = (Species) databaseObjectService.findByIdNoRelations(speciesId);
+                    } catch (Exception e) {
+                        System.err.println(speciesId + " is not the identifier of a valid Species object");
+                    }
+                    if (species != null) {
+                        outputPathsForSpecies(species, schemaService, databaseObjectService);
+                    }
+                    break;
+                case MULTIPLE_PATHS:
+                    total = multipleIds.length;
+                    Pathway pathway1 = null;
+                    int done = 0;
+                    for (long id : multipleIds) {
+                        pathway1 = null;
+                        try {
+                            pathway1 = (Pathway) databaseObjectService.findByIdNoRelations(id);
+                        } catch (Exception e) {
+                            System.err.println(id + " is not the identifier of a valid Pathway object");
+                        }
+                        if (pathway1 != null) {
+                            outputPath(pathway1);
+                            done++;
+                            updateProgressBar(done);
+                        }
+                    }
+                    break;
+            }
+        } else {
+            System.err.println("Too many arguments detected. Expected either no pathway arguments or one of -t, -s, -m, -l.");
+        }
+
+        try {
+            if (out != null) {
+                out.close();
+            }
+        }
+        catch (IOException e) {
+            System.err.println("Caught IOException: " + e.getMessage());
+        }
     }
+
+    /**
+     * function to get the command line arguments and determine the requested output
+     *
+     * @param config JSAPResult result of first parse
+     */
+    private static void parseAdditionalArguments(JSAPResult config) {
+        outputfilename = config.getString("outfilename");
+        if (outputfilename.length() == 0) {
+            outputfilename = defaultFilename;
+        }
+        try {
+            fout = new FileWriter(outputfilename, true);
+            out = new BufferedWriter(fout);
+        }
+        catch (IOException e) {
+            System.err.println("Caught IOException: " + e.getMessage());
+        }
+
+        singleId = config.getLong("toplevelpath");
+        speciesId = config.getLong("species");
+        multipleIds = config.getLongArray("multiple");
+
+        if (singleId == 0) {
+            if (speciesId == 0) {
+                if (multipleIds.length > 0) {
+                    outputStatus = Status.MULTIPLE_PATHS;
+                } else {
+                    outputStatus = Status.ALL_PATWAYS;
+                }
+            } else {
+                outputStatus = Status.ALL_PATHWAYS_SPECIES;
+            }
+        }
+    }
+
+    /**
+     * function to check that only one argument relating to the pathway has been given
+     *
+     * @return true if only one argument, false if more than one
+     */
+    private static boolean singleArgumentSupplied() {
+        if (singleId != 0) {
+            // have -t shouldnt have anything else
+            if (speciesId != 0 || multipleIds.length > 0) {
+                return false;
+            }
+        } else if (speciesId != 0) {
+            // have -s shouldnt have anything else
+            if (multipleIds.length > 0) {
+                return false;
+            }
+         }
+        return true;
+    }
+
+    /**
+     * Output all Pathways for the given Species
+     *
+     * @param species       ReactomeDB Species
+     * @param schemaService database service to use
+     */
+    private static void outputPathsForSpecies(Species species, SchemaService schemaService, DatabaseObjectService databaseObjectService) {
+        total = schemaService.getByClass(Pathway.class, species).size();
+        int done = 0;
+        System.out.println("\nOutputting pathways for " + species.getDisplayName());
+        Collection<SimpleDatabaseObject> pathways = schemaService.getSimpleDatabaseObjectByClass(Pathway.class, species);
+        Iterator<SimpleDatabaseObject> iterator = pathways.iterator();
+        while (iterator.hasNext()) {
+            Pathway path = databaseObjectService.findByIdNoRelations(iterator.next().getStId());
+            outputPath(path);
+            done++;
+            updateProgressBar(done);
+            path = null;
+        }
+    }
+
+    /**
+     * Write the line relating to the pathway to the output file
+     *
+     * @param path ReactomeDB Pathway to output
+     */
+    private static void outputPath(Pathway path) {
+        WikiDataExtractor wdExtract = new WikiDataExtractor(path, dbVersion);
+        wdExtract.createWikidataEntry();
+        try {
+            out.write(wdExtract.getWikidataEntry());
+            out.newLine();
+        }
+        catch (IOException e) {
+            System.err.println("Caught IOException: " + e.getMessage());
+        }
+    }
+
+
+
+
+    /**
+     * Simple method that prints a progress bar to command line
+     *
+     * @param done Number of entries added to the graph
+     */
+    private static void updateProgressBar(int done) {
+        String format = "\r%3d%% %s %c";
+        char[] rotators = {'|', '/', '-', '\\'};
+        double percent = (double) done / total;
+        StringBuilder progress = new StringBuilder(width);
+        progress.append('|');
+        int i = 0;
+        for (; i < (int) (percent * width); i++) progress.append("=");
+        for (; i < width; i++) progress.append(" ");
+        progress.append('|');
+        System.out.printf(format, (int) (percent * 100), progress, rotators[((done - 1) % (rotators.length * 100)) / 100]);
+    }
+
 
 }
 
