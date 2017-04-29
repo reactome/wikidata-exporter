@@ -38,6 +38,7 @@ public class R_ExportWikiData {
     private static Status outputStatus = Status.SINGLE_PATH;
 
     private static int dbVersion = 0;
+    private static int count = 0;
 
     private static final int width = 70;
     private static int total;
@@ -79,6 +80,7 @@ public class R_ExportWikiData {
 
         outputStatus = Status.SINGLE_PATH;
         parseAdditionalArguments(config);
+        count = 0;
 
         if (singleArgumentSupplied()) {
             dbVersion = genericService.getDBVersion();
@@ -228,9 +230,7 @@ public class R_ExportWikiData {
      * @param path ReactomeDB Pathway to output
      */
     private static void outputPath(Pathway path) {
-        String hs = new String("Homo sapiens");
-        if (!path.getSpeciesName().equals(hs)) {
-            System.err.println("Only the Homo sapien species is supported as yet");
+        if (!is_appropriate(path)) {
             return;
         }
         WikiDataExtractor wdExtract = new WikiDataExtractor(path, dbVersion);
@@ -238,7 +238,7 @@ public class R_ExportWikiData {
         try {
             out.write(wdExtract.getWikidataEntry());
             out.newLine();
-            wdExtract.toStdOut();
+ //           wdExtract.toStdOut();
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -246,6 +246,28 @@ public class R_ExportWikiData {
     }
 
 
+    /**
+     * Function to apply content filter to the pathways being added to the export file
+     *
+     * @param path  ReactomeDB Pathway to check
+     *
+     * @return true if path meets teh criteria, false otherwise
+     */
+    private static boolean is_appropriate(Pathway path) {
+        boolean isOK = true;
+        String hs = new String("Homo sapiens");
+        if (!path.getSpeciesName().equals(hs)) {
+            System.err.println("Only the Homo sapien species is supported as yet");
+            isOK = false;
+        }
+        if (count > 10) {
+            isOK = false;
+        }
+
+        if (isOK) count++;
+
+        return isOK;
+    }
 
 
     /**
