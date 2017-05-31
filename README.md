@@ -2,7 +2,7 @@
 
 This is the sister code of the [R_WikidataBot](https://github.com/skeating/R_WikidataBot) and creates the required csv file from the Reactome Graph Database.
 
-##Code
+## Code
 
 The code is written in Java and uses the [Graph Database](http://www.reactome.org/pages/documentation/developer-guide/graph-database/) and corresponding API. 
 
