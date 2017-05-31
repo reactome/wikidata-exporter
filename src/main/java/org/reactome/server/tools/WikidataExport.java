@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
-public class R_ExportWikiData {
+public class WikidataExport {
 
     private static String outputfilename = "";
     private static String defaultFilename = "reactome_data.csv";
@@ -48,7 +48,7 @@ public class R_ExportWikiData {
 
     public static void main(String[] args) throws JSAPException {
 
-        SimpleJSAP jsap = new SimpleJSAP(R_ExportWikiData.class.getName(), "A tool to create a csv file to read data into Wikidata",
+        SimpleJSAP jsap = new SimpleJSAP(WikidataExport.class.getName(), "A tool to create a csv file to read data into Wikidata",
                 new Parameter[]{
                         new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.REQUIRED, 'h', "host", "The neo4j host"),
                         new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.NOT_REQUIRED, 'b', "port", "The neo4j port"),

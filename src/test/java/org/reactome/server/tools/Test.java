@@ -24,7 +24,7 @@ public class Test {
 
     @BeforeClass
     public static void setup()  throws JSAPException {
-        SimpleJSAP jsap = new SimpleJSAP(R_ExportWikiData.class.getName(), "A tool for generating SBML files",
+        SimpleJSAP jsap = new SimpleJSAP(WikidataExport.class.getName(), "A tool for generating SBML files",
                 new Parameter[]{
                         new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.REQUIRED, 'h', "host", "The neo4j host"),
                         new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.REQUIRED, 'b', "port", "The neo4j port"),
