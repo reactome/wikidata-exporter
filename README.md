@@ -1,8 +1,6 @@
-# R_ExportWikiData
+# WikidataExport
 
-(I know, awful name but will change it once we have agreement.)
-
-This is the sister code of the [R_WikidataBot](https://github.com/skeating/R_WikidataBot) and creates teh required csv file from the Reactome Graph Database.
+This is the sister code of the [R_WikidataBot](https://github.com/skeating/R_WikidataBot) and creates the required csv file from the Reactome Graph Database.
 
 ##Code
 
@@ -58,7 +56,7 @@ where
 - Name the Reactome Display Name
 - Description a sentence based on Name stating that this is an instance of this pathway in the given species
 - [publication1;..] a semi-colon separated list of the pmid URL of each referenced publication
-- goterm teh relevant term as GO:nnnn
+- goterm the relevant term as GO:nnnn
 - None - to indicate the end of the entry
   
 
@@ -72,6 +70,7 @@ Currently the code only supports the Homo sapiens species as it hard codes the '
 
 1. Support all species
 2. Support a reaction that is not a Pathway
+3. Add partOf and hasPart entries to link pathways
 
 
 
