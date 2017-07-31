@@ -155,7 +155,7 @@ public class WikidataExport {
      */
     private static void parseAdditionalArguments(JSAPResult config) {
         outputfilename = config.getString("outfilename");
-        if (outputfilename.length() == 0 || outputfilename == ".") {
+        if (outputfilename.length() == 0 || outputfilename.equals(".")) {
             outputfilename = defaultFilename;
         }
         try {
@@ -260,9 +260,9 @@ public class WikidataExport {
             System.err.println("Only the Homo sapien species is supported as yet");
             isOK = false;
         }
-        if (count > 10) {
-            isOK = false;
-        }
+//        if (count > 10) {
+//            isOK = false;
+//        }
 
         if (isOK) count++;
 

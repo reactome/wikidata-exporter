@@ -20,7 +20,8 @@ public class TestWDExtractGOTerm {
     private static WikiDataExtractor wdextract;
     private static String expected = "HSA,R-HSA-73894,DNA Repair,"
             +"An instance of DNA Repair in Homo sapiens,"
-            +"[http://identifiers.org/pubmed/10583946;http://identifiers.org/pubmed/23175119],GO:0006281,None";
+            +"[http://identifiers.org/pubmed/10583946;http://identifiers.org/pubmed/23175119],GO:0006281,"
+            +"[R-HSA-73942;R-HSA-73893;R-HSA-5696398;R-HSA-6783310;R-HSA-5693532;R-HSA-73884;R-HSA-5358508],[],None";
 
     @BeforeClass
     public static void setup() throws JSAPException {

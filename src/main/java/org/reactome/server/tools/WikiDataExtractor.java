@@ -1,5 +1,6 @@
 package org.reactome.server.tools;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.model.Event;
 import org.sbml.jsbml.*;
@@ -21,6 +22,8 @@ class WikiDataExtractor {
     private static Integer dbVersion = 0;
 
     private static String wdEntry;
+
+    private static String parentPathway = "";
 
     /**
      * Construct an instance of the WikiDataExtractor
@@ -52,21 +55,42 @@ class WikiDataExtractor {
     }
 
     /**
+     * Construct an instance of the WikiDataExtractor for the specified
+     * Pathway.
+     *
+     * @param pathway Pathway from ReactomeDB
+     * @param version Integer - version number of the database
+     * @param parentId - the string representation of the id of the parent pathway
+     */
+    public WikiDataExtractor(Pathway pathway, Integer version, String parentId){
+        thisPathway = pathway;
+        dbVersion = version;
+        parentPathway = parentId;
+    }
+
+    /**
      * Create the wikidata entry using the Reactome Pathway specified in the constructor.
      */
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
-        // species_code,stableId,Name,Description,[publication;publication;..],goterm,None
-        String format = "%s,%s,%s,%s,[%s],%s,None";
+        // species_code,stableId,Name,Description,[publication;publication;..],goterm,[part;part],[partof;partof],None
+        String format = "%s,%s,%s,%s,[%s],%s,[%s],[%s],None";
 
         String species = "HSA";
-        String stId = thisPathway.getStId();
-        String name = getName();
-        String description = composeDescription(name);
-        String publications = getPublicationList();
-        String goterm = getGoTerm();
+        if (thisPathway != null) {
+            String stId = thisPathway.getStId();
+            String name = getName();
+            String description = composeDescription(name);
+            String publications = getPublicationList();
+            String goterm = getGoTerm();
+            String parts = getParts();
+            String partof = getParents();
 
-        wdEntry = String.format(format, species, stId, name, description, publications, goterm);
+            wdEntry = String.format(format, species, stId, name, description, publications, goterm, parts, partof);
+        }
+        else {
+            wdEntry = "invalid pathway";
+        }
     }
 
     /**
@@ -78,7 +102,12 @@ class WikiDataExtractor {
         dbVersion = version;
     }
 
-
+    /**
+     * Set the pathway id of the parent; only used when looping thru data
+     *
+     * @param pathway the stable id of the parent pathway
+     */
+    public void setParentPathway(String pathway) {parentPathway = pathway; }
     ///////////////////////////////////////////////////////////////////////////////////
 
     // functions to output resulting string
@@ -117,6 +146,34 @@ class WikiDataExtractor {
         return "An instance of " + name + " in Homo sapiens";
     }
 
+    private String getParts() {
+        String parts = "";
+        List<Event> events = thisPathway.getHasEvent();
+        if (events == null || events.size() == 0) {
+            return parts;
+        }
+        for (Event e : events) {
+            if (parts.length() > 0)
+                parts = parts + ";";
+            parts = parts + e.getStId();
+        }
+        return parts;
+    }
+
+    private String getParents() {
+        return parentPathway;
+    }
+
+    private String getGoTerm() {
+        String goterm = "";
+        GO_BiologicalProcess go = thisPathway.getGoBiologicalProcess();
+        if (go == null) {
+            return goterm;
+        }
+        goterm = "GO:" + go.getAccession();
+        return goterm;
+    }
+
     private String getPublicationList() {
         String pubs = "";
         List<Publication> publications = thisPathway.getLiteratureReference();
@@ -136,13 +193,4 @@ class WikiDataExtractor {
         return pubs;
     }
 
-    private String getGoTerm() {
-        String goterm = "";
-        GO_BiologicalProcess go = thisPathway.getGoBiologicalProcess();
-        if (go == null) {
-            return goterm;
-        }
-        goterm = "GO:" + go.getAccession();
-        return goterm;
-    }
 }

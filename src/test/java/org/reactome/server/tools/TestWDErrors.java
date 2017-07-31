@@ -1,34 +1,24 @@
 package org.reactome.server.tools;
 
-import com.martiansoftware.jsap.*;
+import com.martiansoftware.jsap.JSAPException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.domain.model.Pathway;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.config.GraphNeo4jConfig;
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 
 /**
  * Unit test for simple WikiDataExtractor.
  */
-public class TestWDExtractPathway {
+public class TestWDErrors {
 
     private static  Pathway pathway;
     private static WikiDataExtractor wdextract;
-    private static String expected = "HSA,R-HSA-168275,Entry of Influenza Virion into Host Cell via Endocytosis,"
-        +"An instance of Entry of Influenza Virion into Host Cell via Endocytosis in Homo sapiens,[],GO:0019065,"
-    +"[R-HSA-168285],[],None";
+    private static String expected = "invalid pathway";
 
     @BeforeClass
     public static void setup() throws JSAPException {
-        DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
-        String dbid = "R-HSA-168275";
-        pathway = (Pathway) databaseObjectService.findById(dbid);
-
-        wdextract = new WikiDataExtractor(pathway);
+        wdextract = new WikiDataExtractor(null);
     }
 
     @org.junit.Test
