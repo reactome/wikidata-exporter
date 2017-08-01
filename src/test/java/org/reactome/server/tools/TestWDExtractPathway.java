@@ -22,6 +22,10 @@ public class TestWDExtractPathway {
         +"An instance of Entry of Influenza Virion into Host Cell via Endocytosis in Homo sapiens,[],GO:0019065,"
     +"[R-HSA-168285],[],None";
 
+    private static String expected_rn = "HSA,R-HSA-168285,Clathrin-Mediated Pit Formation And Endocytosis Of The "
+    +"Influenza Virion,An instance of Clathrin-Mediated Pit Formation And Endocytosis Of The Influenza Virion in "
+    +"Homo sapiens,[],GO:0019065,[],[R-HSA-168275],None";
+
     @BeforeClass
     public static void setup() throws JSAPException {
         DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
@@ -45,6 +49,18 @@ public class TestWDExtractPathway {
 
         Assert.assertTrue( "WikiDataExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected);
+    }
+
+    @org.junit.Test
+    public void testReactionEntry()
+    {
+        ReactionLikeEvent rn = (ReactionLikeEvent)(pathway.getHasEvent().get(0));
+        wdextract = new WikiDataExtractor(rn, 1, "R-HSA-168275");
+        wdextract.createWikidataEntry();
+        String entry = wdextract.getWikidataEntry();
+
+        Assert.assertTrue( "WikiDataExtractor createReactionEntry failed", entry != null );
+        Assert.assertEquals(entry, expected_rn);
     }
 
 

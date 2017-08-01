@@ -1,9 +1,7 @@
 package org.reactome.server.tools;
 
 import com.martiansoftware.jsap.*;
-import org.reactome.server.graph.domain.model.Event;
-import org.reactome.server.graph.domain.model.Pathway;
-import org.reactome.server.graph.domain.model.Species;
+import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.SimpleDatabaseObject;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.GeneralService;
@@ -213,7 +211,7 @@ public class WikidataExport {
         total = schemaService.getByClass(Pathway.class, species).size();
         int done = 0;
         System.out.println("\nOutputting pathways for " + species.getDisplayName());
-        Collection<SimpleDatabaseObject> pathways = schemaService.getSimpleDatabaseObjectByClass(Pathway.class, species);
+        Collection<SimpleDatabaseObject> pathways = schemaService.getSimpleDatabaseObjectByClass(TopLevelPathway.class, species);
         Iterator<SimpleDatabaseObject> iterator = pathways.iterator();
         while (iterator.hasNext()) {
             Pathway path = databaseObjectService.findByIdNoRelations(iterator.next().getStId());
@@ -243,15 +241,52 @@ public class WikidataExport {
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
         }
+        writeChildren(path);
     }
 
+
+    private static void writeChildren(Pathway path) {
+        List<Event> loe = path.getHasEvent();
+        if (loe == null || loe.size() == 0)
+            return;
+        for (Event event: loe) {
+            if (event instanceof Pathway) {
+                Pathway child = (Pathway) (event);
+                WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
+                wdExtract.createWikidataEntry();
+                try {
+                    out.write(wdExtract.getWikidataEntry());
+                    out.newLine();
+                    //           wdExtract.toStdOut();
+                } catch (IOException e) {
+                    System.err.println("Caught IOException: " + e.getMessage());
+                }
+                writeChildren(child);
+            }
+            else if (event instanceof ReactionLikeEvent) {
+                ReactionLikeEvent child = (ReactionLikeEvent) (event);
+                WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
+                wdExtract.createWikidataEntry();
+                try {
+                    out.write(wdExtract.getWikidataEntry());
+                    out.newLine();
+                    //           wdExtract.toStdOut();
+                } catch (IOException e) {
+                    System.err.println("Caught IOException: " + e.getMessage());
+                }
+
+            }
+
+        }
+
+    }
 
     /**
      * Function to apply content filter to the pathways being added to the export file
      *
      * @param path  ReactomeDB Pathway to check
      *
-     * @return true if path meets teh criteria, false otherwise
+     * @return true if path meets the criteria, false otherwise
      */
     private static boolean is_appropriate(Pathway path) {
         boolean isOK = true;

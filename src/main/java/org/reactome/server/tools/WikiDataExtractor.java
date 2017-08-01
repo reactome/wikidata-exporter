@@ -18,10 +18,11 @@ import java.util.List;
 class WikiDataExtractor {
 
     private final Pathway thisPathway;
+    private final ReactionLikeEvent thisReaction;
 
     private static Integer dbVersion = 0;
 
-    private static String wdEntry;
+    private static String wdEntry = "";
 
     private static String parentPathway = "";
 
@@ -30,6 +31,9 @@ class WikiDataExtractor {
      */
     public WikiDataExtractor(){
         thisPathway = null;
+        thisReaction = null;
+        parentPathway = "";
+        wdEntry  = "";
     }
 
     /**
@@ -40,6 +44,9 @@ class WikiDataExtractor {
      */
     public WikiDataExtractor(Pathway pathway){
         thisPathway = pathway;
+        thisReaction = null;
+        parentPathway = "";
+        wdEntry  = "";
     }
 
     /**
@@ -51,7 +58,10 @@ class WikiDataExtractor {
      */
     public WikiDataExtractor(Pathway pathway, Integer version){
         thisPathway = pathway;
+        thisReaction = null;
         dbVersion = version;
+        parentPathway = "";
+        wdEntry  = "";
     }
 
     /**
@@ -64,8 +74,54 @@ class WikiDataExtractor {
      */
     public WikiDataExtractor(Pathway pathway, Integer version, String parentId){
         thisPathway = pathway;
+        thisReaction = null;
         dbVersion = version;
         parentPathway = parentId;
+        wdEntry  = "";
+    }
+
+    /**
+     * Construct an instance of the WikiDataExtractor for the specified
+     * Reaction.
+     *
+     * @param reaction  ReactionLikeEvent from ReactomeDB
+     */
+    public WikiDataExtractor(ReactionLikeEvent reaction){
+        thisPathway = null;
+        thisReaction = reaction;
+        parentPathway = "";
+        wdEntry  = "";
+    }
+
+    /**
+     * Construct an instance of the WikiDataExtractor for the specified
+     * Pathway.
+     *
+     * @param reaction  ReactionLikeEvent from ReactomeDB
+     * @param version Integer - version number of the database
+     */
+    public WikiDataExtractor(ReactionLikeEvent reaction, Integer version){
+        thisPathway = null;
+        thisReaction = reaction;
+        dbVersion = version;
+        parentPathway = "";
+        wdEntry  = "";
+    }
+
+    /**
+     * Construct an instance of the WikiDataExtractor for the specified
+     * Pathway.
+     *
+     * @param reaction  ReactionLikeEvent from ReactomeDB
+     * @param version Integer - version number of the database
+     * @param parentId - the string representation of the id of the parent pathway
+     */
+    public WikiDataExtractor(ReactionLikeEvent reaction, Integer version, String parentId){
+        thisPathway = null;
+        thisReaction = reaction;
+        dbVersion = version;
+        parentPathway = parentId;
+        wdEntry  = "";
     }
 
     /**
@@ -77,8 +133,8 @@ class WikiDataExtractor {
         String format = "%s,%s,%s,%s,[%s],%s,[%s],[%s],None";
 
         String species = "HSA";
-        if (thisPathway != null) {
-            String stId = thisPathway.getStId();
+        if (thisPathway != null || thisReaction != null) {
+            String stId = getIdentifier();
             String name = getName();
             String description = composeDescription(name);
             String publications = getPublicationList();
@@ -136,8 +192,13 @@ class WikiDataExtractor {
 
     // Private functions
 
+    private String getIdentifier() {
+        String id = ((thisPathway != null) ? thisPathway.getStId() : thisReaction.getStId());
+        return id;
+    }
+
     private String getName() {
-        String name = thisPathway.getDisplayName();
+        String name = ((thisPathway != null) ? thisPathway.getDisplayName() : thisReaction.getDisplayName());
         String name_nocommas = name.replaceAll(",", ";");
         return name_nocommas;
     }
@@ -148,14 +209,16 @@ class WikiDataExtractor {
 
     private String getParts() {
         String parts = "";
-        List<Event> events = thisPathway.getHasEvent();
-        if (events == null || events.size() == 0) {
-            return parts;
-        }
-        for (Event e : events) {
-            if (parts.length() > 0)
-                parts = parts + ";";
-            parts = parts + e.getStId();
+        if (thisPathway != null) {
+            List<Event> events = thisPathway.getHasEvent();
+            if (events == null || events.size() == 0) {
+                return parts;
+            }
+            for (Event e : events) {
+                if (parts.length() > 0)
+                    parts = parts + ";";
+                parts = parts + e.getStId();
+            }
         }
         return parts;
     }
@@ -166,7 +229,7 @@ class WikiDataExtractor {
 
     private String getGoTerm() {
         String goterm = "";
-        GO_BiologicalProcess go = thisPathway.getGoBiologicalProcess();
+        GO_BiologicalProcess go = ((thisPathway != null) ? thisPathway.getGoBiologicalProcess() : thisReaction.getGoBiologicalProcess());
         if (go == null) {
             return goterm;
         }
@@ -176,7 +239,7 @@ class WikiDataExtractor {
 
     private String getPublicationList() {
         String pubs = "";
-        List<Publication> publications = thisPathway.getLiteratureReference();
+        List<Publication> publications = ((thisPathway != null) ? thisPathway.getLiteratureReference() : thisReaction.getLiteratureReference());
         if (publications == null || publications.size() == 0) {
             return pubs;
         }
