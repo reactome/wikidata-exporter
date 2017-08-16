@@ -18,12 +18,12 @@ public class TestWDExtractPathway {
 
     private static  Pathway pathway;
     private static WikiDataExtractor wdextract;
-    private static String expected = "HSA,R-HSA-168275,Entry of Influenza Virion into Host Cell via Endocytosis,"
-        +"An instance of Entry of Influenza Virion into Host Cell via Endocytosis in Homo sapiens,[],GO:0019065,"
+    private static String expected = "HSA,R-HSA-168275,P,Entry of Influenza Virion into Host Cell via Endocytosis,"
+        +"An instance of the biological pathway Entry of Influenza Virion into Host Cell via Endocytosis in Homo sapiens,[],GO:0019065,"
     +"[R-HSA-168285],[],None";
 
-    private static String expected_rn = "HSA,R-HSA-168285,Clathrin-Mediated Pit Formation And Endocytosis Of The "
-    +"Influenza Virion,An instance of Clathrin-Mediated Pit Formation And Endocytosis Of The Influenza Virion in "
+    private static String expected_rn = "HSA,R-HSA-168285,R,Clathrin-Mediated Pit Formation And Endocytosis Of The "
+    +"Influenza Virion,An instance of the biological reaction Clathrin-Mediated Pit Formation And Endocytosis Of The Influenza Virion in "
     +"Homo sapiens,[],GO:0019065,[],[R-HSA-168275],None";
 
     @BeforeClass

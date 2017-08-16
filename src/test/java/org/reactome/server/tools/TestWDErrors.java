@@ -18,7 +18,7 @@ public class TestWDErrors {
 
     @BeforeClass
     public static void setup() throws JSAPException {
-        wdextract = new WikiDataExtractor(null);
+        wdextract = new WikiDataExtractor((Pathway)(null));
     }
 
     @org.junit.Test

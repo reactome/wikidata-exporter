@@ -28,6 +28,7 @@ public class WikidataExport {
     private static long singleId = 0;
     private static long speciesId = 0;
     private static long[] multipleIds;
+    private static String standardId = "";
 
     private enum Status {
         SINGLE_PATH, ALL_PATWAYS, ALL_PATHWAYS_SPECIES, MULTIPLE_PATHS
@@ -62,6 +63,11 @@ public class WikidataExport {
         m.setListSeparator(',');
         jsap.registerParameter(m);
 
+        FlaggedOption stdId = new FlaggedOption("stId", JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, 'i', "stId", "The standard id of a Pathway");
+        stdId.setList(true);
+        stdId.setListSeparator(',');
+        jsap.registerParameter(stdId);
+
         JSAPResult config = jsap.parse(args);
         if (jsap.messagePrinted()) System.exit(1);
 
@@ -86,14 +92,36 @@ public class WikidataExport {
             switch (outputStatus) {
                 case SINGLE_PATH:
                     Pathway pathway = null;
+                    ReactionLikeEvent reaction = null;
                     total = 1;
-                    try {
-                        pathway = (Pathway) databaseObjectService.findByIdNoRelations(singleId);
-                    } catch (Exception e) {
-                        System.err.println(singleId + " is not the identifier of a valid Pathway object");
+                    if (singleId != 0) {
+                        try {
+                            pathway = (Pathway) databaseObjectService.findByIdNoRelations(singleId);
+                        } catch (Exception e) {
+                            System.err.println(singleId + " is not the identifier of a valid Pathway object");
+                        }
+                    }
+                    else if (standardId.length() > 0) {
+                        try {
+                            pathway = (Pathway) databaseObjectService.findByIdNoRelations(standardId);
+                        } catch (Exception e) {
+                            try {
+                                reaction = (ReactionLikeEvent) databaseObjectService.findByIdNoRelations(standardId);
+                            }
+                            catch (Exception e1) {
+                                System.err.println(standardId + " is not the identifier of a valid Pathway/Reaction object");
+                            }
+                        }
+                    }
+                    else {
+                        System.err.println("Expected the identifier of a valid Pathway object");
                     }
                     if (pathway != null) {
                         outputPath(pathway);
+                        updateProgressBar(1);
+                    }
+                    else if (reaction != null) {
+                        outputPath(reaction);
                         updateProgressBar(1);
                     }
                     break;
@@ -164,11 +192,12 @@ public class WikidataExport {
             System.err.println("Caught IOException: " + e.getMessage());
         }
 
+        standardId = config.getString("stId");
         singleId = config.getLong("toplevelpath");
         speciesId = config.getLong("species");
         multipleIds = config.getLongArray("multiple");
 
-        if (singleId == 0) {
+        if (singleId == 0 && standardId == null) {
             if (speciesId == 0) {
                 if (multipleIds.length > 0) {
                     outputStatus = Status.MULTIPLE_PATHS;
@@ -189,15 +218,22 @@ public class WikidataExport {
     private static boolean singleArgumentSupplied() {
         if (singleId != 0) {
             // have -t shouldnt have anything else
-            if (speciesId != 0 || multipleIds.length > 0) {
+            if (standardId != null || speciesId != 0 || multipleIds.length > 0) {
                 return false;
             }
-        } else if (speciesId != 0) {
+        }
+        else if (standardId != null && standardId.length() > 0) {
+            // have -i shouldnt have anything else
+            if (singleId != 0 ||speciesId != 0 || multipleIds.length > 0) {
+                return false;
+            }
+        }
+        else if (speciesId != 0) {
             // have -s shouldnt have anything else
             if (multipleIds.length > 0) {
                 return false;
             }
-         }
+        }
         return true;
     }
 
@@ -215,6 +251,9 @@ public class WikidataExport {
         Iterator<SimpleDatabaseObject> iterator = pathways.iterator();
         while (iterator.hasNext()) {
             Pathway path = databaseObjectService.findByIdNoRelations(iterator.next().getStId());
+            if (!is_appropriate(path)) {
+                continue;
+            }
             outputPath(path);
             done++;
             updateProgressBar(done);
@@ -228,9 +267,6 @@ public class WikidataExport {
      * @param path ReactomeDB Pathway to output
      */
     private static void outputPath(Pathway path) {
-        if (!is_appropriate(path)) {
-            return;
-        }
         WikiDataExtractor wdExtract = new WikiDataExtractor(path, dbVersion);
         wdExtract.createWikidataEntry();
         try {
@@ -282,6 +318,23 @@ public class WikidataExport {
     }
 
     /**
+     * Write the line relating to the pathway to the output file
+     *
+     * @param rle ReactomeDB ReactionLikeEvent to output
+     */
+    private static void outputPath(ReactionLikeEvent rle) {
+        WikiDataExtractor wdExtract = new WikiDataExtractor(rle, dbVersion);
+        wdExtract.createWikidataEntry();
+        try {
+            out.write(wdExtract.getWikidataEntry());
+            out.newLine();
+            wdExtract.toStdOut();
+        }
+        catch (IOException e) {
+            System.err.println("Caught IOException: " + e.getMessage());
+        }
+    }
+    /**
      * Function to apply content filter to the pathways being added to the export file
      *
      * @param path  ReactomeDB Pathway to check
@@ -293,6 +346,9 @@ public class WikidataExport {
         String hs = new String("Homo sapiens");
         if (!path.getSpeciesName().equals(hs)) {
             System.err.println("Only the Homo sapien species is supported as yet");
+            isOK = false;
+        }
+        if (!(path instanceof TopLevelPathway)){
             isOK = false;
         }
 //        if (count > 10) {

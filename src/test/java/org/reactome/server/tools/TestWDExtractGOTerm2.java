@@ -14,20 +14,19 @@ import static junit.framework.TestCase.assertTrue;
 /**
  * Unit test for simple WikiDataExtractor.
  */
-public class TestWDExtractGOTerm {
+public class TestWDExtractGOTerm2 {
 
-    private static  Pathway pathway;
+    private static  ReactionLikeEvent pathway;
     private static WikiDataExtractor wdextract;
-    private static String expected = "HSA,R-HSA-73894,P,DNA Repair,"
-            +"An instance of the biological pathway DNA Repair in Homo sapiens,"
-            +"[http://identifiers.org/pubmed/10583946;http://identifiers.org/pubmed/23175119],GO:0006281,"
-            +"[R-HSA-73942;R-HSA-73893;R-HSA-5696398;R-HSA-6783310;R-HSA-5693532;R-HSA-73884;R-HSA-5358508],[],None";
+    private static String expected = "HSA,R-HSA-8848215,R,ACAT2 condenses 2 Ac-CoA to form ACA-CoA," +
+            "An instance of the biological reaction ACAT2 condenses 2 Ac-CoA to form ACA-CoA in Homo sapiens," +
+    "[http://identifiers.org/pubmed/9380443;http://identifiers.org/pubmed/7911016],,[],[],None";
 
     @BeforeClass
     public static void setup() throws JSAPException {
         DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
-        String dbid = "R-HSA-73894"; // pathway with a single child reaction
-        pathway = (Pathway) databaseObjectService.findById(dbid);
+        String dbid = "R-HSA-8848215"; // pathway with a single child reaction
+        pathway = (ReactionLikeEvent) databaseObjectService.findById(dbid);
 
         wdextract = new WikiDataExtractor(pathway);
     }

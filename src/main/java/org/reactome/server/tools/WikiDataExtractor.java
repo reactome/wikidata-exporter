@@ -130,9 +130,10 @@ class WikiDataExtractor {
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
         // species_code,stableId,Name,Description,[publication;publication;..],goterm,[part;part],[partof;partof],None
-        String format = "%s,%s,%s,%s,[%s],%s,[%s],[%s],None";
+        String format = "%s,%s,%s,%s,%s,[%s],%s,[%s],[%s],None";
 
         String species = "HSA";
+        String eventType = ((thisPathway != null) ? "P" : "R");
         if (thisPathway != null || thisReaction != null) {
             String stId = getIdentifier();
             String name = getName();
@@ -142,7 +143,7 @@ class WikiDataExtractor {
             String parts = getParts();
             String partof = getParents();
 
-            wdEntry = String.format(format, species, stId, name, description, publications, goterm, parts, partof);
+            wdEntry = String.format(format, species, stId, eventType, name, description, publications, goterm, parts, partof);
         }
         else {
             wdEntry = "invalid pathway";
@@ -204,7 +205,8 @@ class WikiDataExtractor {
     }
 
     private String composeDescription(String name) {
-        return "An instance of " + name + " in Homo sapiens";
+        String eventType = ((thisPathway != null) ? "pathway" : "reaction");
+        return "An instance of the biological " + eventType + " " + name + " in Homo sapiens";
     }
 
     private String getParts() {
@@ -229,6 +231,7 @@ class WikiDataExtractor {
 
     private String getGoTerm() {
         String goterm = "";
+//        GO_BiologicalProcess go = thisReaction.getGoBiologicalProcess();
         GO_BiologicalProcess go = ((thisPathway != null) ? thisPathway.getGoBiologicalProcess() : thisReaction.getGoBiologicalProcess());
         if (go == null) {
             return goterm;
