@@ -132,6 +132,9 @@ class WikiDataExtractor {
         // species_code,stableId,Name,Description,[publication;publication;..],goterm,[part;part],[partof;partof],None
         String format = "%s,%s,%s,%s,%s,[%s],%s,[%s],[%s],None";
 
+        // species_code,stableId,Name,Description,[publication;publication;..],goterm,[part;part],[partof;partof],[protein;protein]None
+        //String format = "%s,%s,%s,%s,%s,[%s],%s,[%s],[%s],[%s],None";
+
         String species = "HSA";
         String eventType = ((thisPathway != null) ? "P" : "R");
         if (thisPathway != null || thisReaction != null) {
@@ -144,6 +147,8 @@ class WikiDataExtractor {
             String partof = getParents();
 
             wdEntry = String.format(format, species, stId, eventType, name, description, publications, goterm, parts, partof);
+//            String proteins = getProteins();
+//            wdEntry = String.format(format, species, stId, eventType, name, description, publications, goterm, parts, partof,proteins);
         }
         else {
             wdEntry = "invalid pathway";
@@ -211,6 +216,7 @@ class WikiDataExtractor {
 
     private String getParts() {
         String parts = "";
+        StringBuilder sb;
         if (thisPathway != null) {
             List<Event> events = thisPathway.getHasEvent();
             if (events == null || events.size() == 0) {
@@ -223,6 +229,61 @@ class WikiDataExtractor {
             }
         }
         return parts;
+    }
+
+    private String getProteins() {
+        String parts = "";
+        if (thisReaction != null) {
+            List<PhysicalEntity> events = thisReaction.getInput();
+            List<PhysicalEntity> outputs = thisReaction.getOutput();
+            if ((events == null && outputs == null) || (events.size() == 0 && outputs.size() == 0)) {
+                return parts;
+            }
+            for (PhysicalEntity e : events) {
+                String ref = getPhysicalEntityReference(e);
+                if (!ref.equals("")) {
+                    if (parts.length() > 0)
+                        parts = parts + ";";
+                    parts = parts + ref;
+                }
+            }
+        }
+        return parts;
+    }
+
+    private String getPhysicalEntityReference(PhysicalEntity pe) {
+        String strref = "";
+        if (pe instanceof SimpleEntity){
+        }
+        else if (pe instanceof EntityWithAccessionedSequence){
+            ReferenceEntity ref = ((EntityWithAccessionedSequence)(pe)).getReferenceEntity();
+            if (ref != null) {
+                String db = ref.getDatabaseName();
+                String uni = "UniProt";
+                if (db.equals(uni)) {
+                    strref = ref.getIdentifier();
+                }
+            }
+            ref = null;
+        }
+        else if (pe instanceof Complex){
+            List<PhysicalEntity> components = ((Complex)(pe)).getHasComponent();
+            if (components != null) {
+                for (PhysicalEntity component : components) {
+                    if (strref.length() > 0)
+                        strref = strref + ";";
+                    strref = strref + getPhysicalEntityReference(component);
+                }
+            }
+            components = null;
+        }
+        else if (pe instanceof EntitySet){
+        }
+        else if (pe instanceof Polymer){
+        }
+        else {
+        }
+        return strref;
     }
 
     private String getParents() {
