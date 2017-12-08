@@ -49,16 +49,19 @@ The output for the argument -m will be the csv file with a one entry correspondi
 
 The code generates a comma separated value (.csv) file where each line refers to a Pathway and therefore a single Wikisdata entry. The entries expected are:
 
-**Species\_code,Reactome\_Id,Name,Description,[publication1;publication2;..],goterm,None**
+**Species\_code, Reactome\_Id, eventType, Name, Description, [publication1;publication2;..], goterm, [hasPart1;hasPart2;..], partOf, None**
 
 where
 
 - Species\_code is the three letter abbreviation of the species used by Reactome e.g. HSA
-- Reactome\_Id is the Reactome Stable Indentifier for the pathway
+- Reactome\_Id is the Reactome Stable Identifier for the pathway
+- eventType is either 'P' if the entry is a Pathway or 'R' if it is a ReactionLikeEvent
 - Name the Reactome Display Name
 - Description a sentence based on Name stating that this is an instance of this pathway in the given species
 - [publication1;..] a semi-colon separated list of the pmid URL of each referenced publication
 - goterm the relevant term as GO:nnnn
+- [hasPart1; ..] a semicolon separated list of the Reactome\_Id of any child entries (corresponding to hasEvents)
+- partOf the Reactome\_Id of the parent pathway
 - None - to indicate the end of the entry
   
 
@@ -71,8 +74,8 @@ Before outputting data the code checks that the Pathway meets any restrictions t
 Currently the code only supports the Homo sapiens species as it hard codes the 'HSA' entry in the output.
 
 1. Support all species
-2. Support a reaction that is not a Pathway
-3. Add partOf and hasPart entries to link pathways
+2. Support a reaction that is not a Pathway. This is partly done but working on entries for the components
+3. Add partOf and hasPart entries to link pathways- DONE
 
 
 
