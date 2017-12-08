@@ -133,7 +133,7 @@ class WikiDataExtractor {
         String format = "%s,%s,%s,%s,%s,[%s],%s,[%s],[%s],None";
 
         // species_code,stableId,Name,Description,[publication;publication;..],goterm,[part;part],[partof;partof],[protein;protein]None
-        //String format = "%s,%s,%s,%s,%s,[%s],%s,[%s],[%s],[%s],None";
+//       String format = "%s,%s,%s,%s,%s,[%s],%s,[%s],[%s],[%s],None";
 
         String species = "HSA";
         String eventType = ((thisPathway != null) ? "P" : "R");
@@ -170,6 +170,10 @@ class WikiDataExtractor {
      * @param pathway the stable id of the parent pathway
      */
     public void setParentPathway(String pathway) {parentPathway = pathway; }
+
+    public String getStableID() {
+        return getIdentifier();
+    }
     ///////////////////////////////////////////////////////////////////////////////////
 
     // functions to output resulting string
@@ -199,12 +203,21 @@ class WikiDataExtractor {
     // Private functions
 
     private String getIdentifier() {
-        String id = ((thisPathway != null) ? thisPathway.getStId() : thisReaction.getStId());
+        String id = "";
+        if (thisPathway != null || thisReaction != null) {
+            id = ((thisPathway != null) ? thisPathway.getStId() : thisReaction.getStId());
+        }
         return id;
     }
 
     private String getName() {
-        String name = ((thisPathway != null) ? thisPathway.getDisplayName() : thisReaction.getDisplayName());
+        String name;
+        try {
+            name = ((thisPathway != null) ? thisPathway.getDisplayName() : thisReaction.getDisplayName());
+        }
+        catch (NullPointerException e) {
+            return "";
+        }
         String name_nocommas = name.replaceAll(",", ";");
         return name_nocommas;
     }
@@ -253,9 +266,9 @@ class WikiDataExtractor {
 
     private String getPhysicalEntityReference(PhysicalEntity pe) {
         String strref = "";
-        if (pe instanceof SimpleEntity){
-        }
-        else if (pe instanceof EntityWithAccessionedSequence){
+//        if (pe instanceof SimpleEntity){
+//        }
+        if (pe instanceof EntityWithAccessionedSequence){
             ReferenceEntity ref = ((EntityWithAccessionedSequence)(pe)).getReferenceEntity();
             if (ref != null) {
                 String db = ref.getDatabaseName();
@@ -266,23 +279,23 @@ class WikiDataExtractor {
             }
             ref = null;
         }
-        else if (pe instanceof Complex){
-            List<PhysicalEntity> components = ((Complex)(pe)).getHasComponent();
-            if (components != null) {
-                for (PhysicalEntity component : components) {
-                    if (strref.length() > 0)
-                        strref = strref + ";";
-                    strref = strref + getPhysicalEntityReference(component);
-                }
-            }
-            components = null;
-        }
-        else if (pe instanceof EntitySet){
-        }
-        else if (pe instanceof Polymer){
-        }
-        else {
-        }
+//        else if (pe instanceof Complex){
+//            List<PhysicalEntity> components = ((Complex)(pe)).getHasComponent();
+//            if (components != null) {
+//                for (PhysicalEntity component : components) {
+//                    if (strref.length() > 0)
+//                        strref = strref + ";";
+//                    strref = strref + getPhysicalEntityReference(component);
+//                }
+//            }
+//            components = null;
+//        }
+//        else if (pe instanceof EntitySet){
+//        }
+//        else if (pe instanceof Polymer){
+//        }
+//        else {
+//        }
         return strref;
     }
 

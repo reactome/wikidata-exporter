@@ -45,6 +45,8 @@ public class WikidataExport {
     private static FileWriter fout;
     private static BufferedWriter out;
 
+    private static List<String> entriesMade = new ArrayList<String>();
+
     public static void main(String[] args) throws JSAPException {
 
         SimpleJSAP jsap = new SimpleJSAP(WikidataExport.class.getName(), "A tool to create a csv file to read data into Wikidata",
@@ -96,17 +98,17 @@ public class WikidataExport {
                     total = 1;
                     if (singleId != 0) {
                         try {
-                            pathway = (Pathway) databaseObjectService.findByIdNoRelations(singleId);
+                            pathway = databaseObjectService.findByIdNoRelations(singleId);
                         } catch (Exception e) {
                             System.err.println(singleId + " is not the identifier of a valid Pathway object");
                         }
                     }
                     else if (standardId.length() > 0) {
                         try {
-                            pathway = (Pathway) databaseObjectService.findByIdNoRelations(standardId);
+                            pathway = databaseObjectService.findByIdNoRelations(standardId);
                         } catch (Exception e) {
                             try {
-                                reaction = (ReactionLikeEvent) databaseObjectService.findByIdNoRelations(standardId);
+                                reaction = databaseObjectService.findByIdNoRelations(standardId);
                             }
                             catch (Exception e1) {
                                 System.err.println(standardId + " is not the identifier of a valid Pathway/Reaction object");
@@ -133,7 +135,7 @@ public class WikidataExport {
                 case ALL_PATHWAYS_SPECIES:
                     Species species = null;
                     try {
-                        species = (Species) databaseObjectService.findByIdNoRelations(speciesId);
+                        species = databaseObjectService.findByIdNoRelations(speciesId);
                     } catch (Exception e) {
                         System.err.println(speciesId + " is not the identifier of a valid Species object");
                     }
@@ -143,12 +145,12 @@ public class WikidataExport {
                     break;
                 case MULTIPLE_PATHS:
                     total = multipleIds.length;
-                    Pathway pathway1 = null;
+                    Pathway pathway1;
                     int done = 0;
                     for (long id : multipleIds) {
                         pathway1 = null;
                         try {
-                            pathway1 = (Pathway) databaseObjectService.findByIdNoRelations(id);
+                            pathway1 = databaseObjectService.findByIdNoRelations(id);
                         } catch (Exception e) {
                             System.err.println(id + " is not the identifier of a valid Pathway object");
                         }
@@ -248,9 +250,8 @@ public class WikidataExport {
         int done = 0;
         System.out.println("\nOutputting pathways for " + species.getDisplayName());
         Collection<SimpleDatabaseObject> pathways = schemaService.getSimpleDatabaseObjectByClass(TopLevelPathway.class, species);
-        Iterator<SimpleDatabaseObject> iterator = pathways.iterator();
-        while (iterator.hasNext()) {
-            Pathway path = databaseObjectService.findByIdNoRelations(iterator.next().getStId());
+        for (SimpleDatabaseObject pathway : pathways) {
+            Pathway path = databaseObjectService.findByIdNoRelations(pathway.getStId());
             if (!is_appropriate(path)) {
                 continue;
             }
@@ -270,9 +271,7 @@ public class WikidataExport {
         WikiDataExtractor wdExtract = new WikiDataExtractor(path, dbVersion);
         wdExtract.createWikidataEntry();
         try {
-            out.write(wdExtract.getWikidataEntry());
-            out.newLine();
- //           wdExtract.toStdOut();
+            writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -291,9 +290,7 @@ public class WikidataExport {
                 WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
                 wdExtract.createWikidataEntry();
                 try {
-                    out.write(wdExtract.getWikidataEntry());
-                    out.newLine();
-                    //           wdExtract.toStdOut();
+                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
                 } catch (IOException e) {
                     System.err.println("Caught IOException: " + e.getMessage());
                 }
@@ -304,9 +301,7 @@ public class WikidataExport {
                 WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
                 wdExtract.createWikidataEntry();
                 try {
-                    out.write(wdExtract.getWikidataEntry());
-                    out.newLine();
-                    //           wdExtract.toStdOut();
+                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
                 } catch (IOException e) {
                     System.err.println("Caught IOException: " + e.getMessage());
                 }
@@ -326,9 +321,7 @@ public class WikidataExport {
         WikiDataExtractor wdExtract = new WikiDataExtractor(rle, dbVersion);
         wdExtract.createWikidataEntry();
         try {
-            out.write(wdExtract.getWikidataEntry());
-            out.newLine();
-            wdExtract.toStdOut();
+            writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -360,6 +353,14 @@ public class WikidataExport {
         return isOK;
     }
 
+    private static void writeLine(String entry, String id) throws IOException {
+        if (entriesMade.contains(id)){
+            return;
+        }
+        entriesMade.add(id);
+        out.write(entry);
+        out.newLine();
+    }
 
     /**
      * Simple method that prints a progress bar to command line
