@@ -18,6 +18,7 @@ import org.reactome.server.tools.config.GraphNeo4jConfig;
 @Suite.SuiteClasses(value={
         TestWDExtractPathway.class, TestWDExtractGOTerm.class,
         TestWDExtractMultiplePathways.class, TestWDErrors.class,
+        TestWDExtractComplex.class
 })
 
 
