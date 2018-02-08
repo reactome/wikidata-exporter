@@ -18,7 +18,7 @@ public class TestWDExtractMultiplePathways {
     private static WikiDataExtractor wdextract;
     private static String expected = "HSA,R-HSA-168255,P,Influenza Life Cycle,An instance of the biological pathway Influenza Life Cycle "
     +"in Homo sapiens,[],GO:0016032,"
-            +"[R-HSA-168275;R-HSA-168274;R-HSA-168272;R-HSA-168273;R-HSA-168270;R-HSA-168271;R-HSA-168268],[],None";
+            +"[R-HSA-168272;R-HSA-168275;R-HSA-168270;R-HSA-168271;R-HSA-168273;R-HSA-168274;R-HSA-168268],[],None";
 
     private static String expected1 = "HSA,R-HSA-168275,P,Entry of Influenza Virion into Host Cell via Endocytosis,"
             +"An instance of the biological pathway Entry of Influenza Virion into Host Cell via Endocytosis in Homo sapiens,[],GO:0019065,"

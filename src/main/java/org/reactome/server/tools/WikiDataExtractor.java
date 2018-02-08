@@ -3,10 +3,6 @@ package org.reactome.server.tools;
 import org.apache.commons.lang3.ObjectUtils;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.model.Event;
-import org.sbml.jsbml.*;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.Species;
 
 
 import java.util.ArrayList;
