@@ -101,3 +101,31 @@ class ExtractorBase {
 
 
 }
+
+class TypeCounter {
+    private final String mName;
+    private final String mStId;
+    private Integer mCount;
+    private final String mType;
+
+    TypeCounter(String stId, String name, String type) {
+        mName = name;
+        mStId = stId;
+        mCount = 0;
+        mType = type;
+    }
+
+    String getName() { return mName; }
+
+    String getType() { return mType; }
+
+    String getStId() { return mStId; }
+
+    Integer getCount() { return mCount; }
+
+    void incrementCount() {
+        mCount++;
+    }
+}
+
+
