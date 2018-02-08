@@ -9,13 +9,13 @@ import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 
 /**
- * Unit test for simple WikiDataExtractor.
+ * Unit test for simple WikiDataPathwayExtractor.
  */
 public class TestWDExtractMultiplePathways {
 
     private static String dbid = "R-HSA-168255";
     private static  Pathway pathway, childPathway;
-    private static WikiDataExtractor wdextract;
+    private static WikiDataPathwayExtractor wdextract;
     private static String expected = "HSA,R-HSA-168255,P,Influenza Life Cycle,An instance of the biological pathway Influenza Life Cycle "
     +"in Homo sapiens,[],GO:0016032,"
             +"[R-HSA-168272;R-HSA-168275;R-HSA-168270;R-HSA-168271;R-HSA-168273;R-HSA-168274;R-HSA-168268],[],None";
@@ -30,13 +30,13 @@ public class TestWDExtractMultiplePathways {
         pathway = (Pathway) databaseObjectService.findById(dbid);
         childPathway = (Pathway) databaseObjectService.findById("R-HSA-168275");
 
-        wdextract = new WikiDataExtractor(pathway);
+        wdextract = new WikiDataPathwayExtractor(pathway);
     }
 
     @org.junit.Test
     public void testConstructor()
     {
-        Assert.assertTrue( "WikiDataExtractor constructor failed", wdextract != null );
+        Assert.assertTrue( "WikiDataPathwayExtractor constructor failed", wdextract != null );
     }
 
     @org.junit.Test
@@ -45,18 +45,18 @@ public class TestWDExtractMultiplePathways {
         wdextract.createWikidataEntry();
         String entry = wdextract.getWikidataEntry();
 
-        Assert.assertTrue( "WikiDataExtractor createEntry failed", entry != null );
+        Assert.assertTrue( "WikiDataPathwayExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected);
     }
 
     @org.junit.Test
     public void testChildEntry()
     {
-        wdextract = new WikiDataExtractor(childPathway, 61, dbid);
+        wdextract = new WikiDataPathwayExtractor(childPathway, 61, dbid);
         wdextract.createWikidataEntry();
         String entry = wdextract.getWikidataEntry();
 
-        Assert.assertTrue( "WikiDataExtractor createEntry failed", entry != null );
+        Assert.assertTrue( "WikiDataPathwayExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected1);
     }
 

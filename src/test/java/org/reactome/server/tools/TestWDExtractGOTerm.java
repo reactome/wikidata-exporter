@@ -12,12 +12,12 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 /**
- * Unit test for simple WikiDataExtractor.
+ * Unit test for simple WikiDataPathwayExtractor.
  */
 public class TestWDExtractGOTerm {
 
     private static  Pathway pathway;
-    private static WikiDataExtractor wdextract;
+    private static WikiDataPathwayExtractor wdextract;
     private static String expected = "HSA,R-HSA-73894,P,DNA Repair,"
             +"An instance of the biological pathway DNA Repair in Homo sapiens,"
             +"[http://identifiers.org/pubmed/10583946;http://identifiers.org/pubmed/23175119],GO:0006281,"
@@ -29,13 +29,13 @@ public class TestWDExtractGOTerm {
         String dbid = "R-HSA-73894"; // pathway with a single child reaction
         pathway = (Pathway) databaseObjectService.findById(dbid);
 
-        wdextract = new WikiDataExtractor(pathway);
+        wdextract = new WikiDataPathwayExtractor(pathway);
     }
 
     @org.junit.Test
     public void testConstructor()
     {
-        Assert.assertTrue( "WikiDataExtractor constructor failed", wdextract != null );
+        Assert.assertTrue( "WikiDataPathwayExtractor constructor failed", wdextract != null );
     }
 
     @org.junit.Test
@@ -44,7 +44,7 @@ public class TestWDExtractGOTerm {
         wdextract.createWikidataEntry();
         String entry = wdextract.getWikidataEntry();
 
-        Assert.assertTrue( "WikiDataExtractor createEntry failed", entry != null );
+        Assert.assertTrue( "WikiDataPathwayExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected);
     }
 

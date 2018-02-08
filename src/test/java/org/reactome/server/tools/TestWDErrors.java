@@ -8,23 +8,23 @@ import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 
 /**
- * Unit test for simple WikiDataExtractor.
+ * Unit test for simple WikiDataPathwayExtractor.
  */
 public class TestWDErrors {
 
     private static  Pathway pathway;
-    private static WikiDataExtractor wdextract;
+    private static WikiDataPathwayExtractor wdextract;
     private static String expected = "invalid pathway";
 
     @BeforeClass
     public static void setup() throws JSAPException {
-        wdextract = new WikiDataExtractor((Pathway)(null));
+        wdextract = new WikiDataPathwayExtractor((Pathway)(null));
     }
 
     @org.junit.Test
     public void testConstructor()
     {
-        Assert.assertTrue( "WikiDataExtractor constructor failed", wdextract != null );
+        Assert.assertTrue( "WikiDataPathwayExtractor constructor failed", wdextract != null );
     }
 
     @org.junit.Test
@@ -33,7 +33,7 @@ public class TestWDErrors {
         wdextract.createWikidataEntry();
         String entry = wdextract.getWikidataEntry();
 
-        Assert.assertTrue( "WikiDataExtractor createEntry failed", entry != null );
+        Assert.assertTrue( "WikiDataPathwayExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected);
     }
 

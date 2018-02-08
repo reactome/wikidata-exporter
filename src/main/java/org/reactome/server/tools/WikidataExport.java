@@ -122,10 +122,6 @@ public class WikidataExport {
                         outputPath(pathway);
                         updateProgressBar(1);
                     }
-                    else if (reaction != null) {
-                        outputPath(reaction);
-                        updateProgressBar(1);
-                    }
                     break;
                 case ALL_PATWAYS:
                     for (Species s : speciesService.getSpecies()) {
@@ -268,7 +264,7 @@ public class WikidataExport {
      * @param path ReactomeDB Pathway to output
      */
     private static void outputPath(Pathway path) {
-        WikiDataExtractor wdExtract = new WikiDataExtractor(path, dbVersion);
+        WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(path, dbVersion);
         wdExtract.createWikidataEntry();
         try {
             writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
@@ -287,7 +283,7 @@ public class WikidataExport {
         for (Event event: loe) {
             if (event instanceof Pathway) {
                 Pathway child = (Pathway) (event);
-                WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
+                WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(child, dbVersion, path.getStId());
                 wdExtract.createWikidataEntry();
                 try {
                     writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
@@ -296,37 +292,22 @@ public class WikidataExport {
                 }
                 writeChildren(child);
             }
-            else if (event instanceof ReactionLikeEvent) {
-                ReactionLikeEvent child = (ReactionLikeEvent) (event);
-                WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
-                wdExtract.createWikidataEntry();
-                try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
-                } catch (IOException e) {
-                    System.err.println("Caught IOException: " + e.getMessage());
-                }
-
-            }
+//            else if (event instanceof ReactionLikeEvent) {
+//                ReactionLikeEvent child = (ReactionLikeEvent) (event);
+//                WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(child, dbVersion, path.getStId());
+//                wdExtract.createWikidataEntry();
+//                try {
+//                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
+//                } catch (IOException e) {
+//                    System.err.println("Caught IOException: " + e.getMessage());
+//                }
+//
+//            }
 
         }
 
     }
 
-    /**
-     * Write the line relating to the pathway to the output file
-     *
-     * @param rle ReactomeDB ReactionLikeEvent to output
-     */
-    private static void outputPath(ReactionLikeEvent rle) {
-        WikiDataExtractor wdExtract = new WikiDataExtractor(rle, dbVersion);
-        wdExtract.createWikidataEntry();
-        try {
-            writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
-        }
-        catch (IOException e) {
-            System.err.println("Caught IOException: " + e.getMessage());
-        }
-    }
     /**
      * Function to apply content filter to the pathways being added to the export file
      *
