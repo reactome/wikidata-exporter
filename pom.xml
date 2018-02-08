@@ -3,18 +3,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.reactome.server.tools</groupId>
-    <artifactId>sbml-exporter</artifactId>
+    <artifactId>wikidata-exporter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>sbml-exporter</name>
+    <name>wikidata-exporter</name>
     <url>http://maven.apache.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <graph.core>1.0.6</graph.core>
-        <sbml.lib.version>1.1</sbml.lib.version>
+        <graph.core>1.1.4</graph.core>
         <jasp.version>2.1</jasp.version>
 
         <maven.compiler.version>3.5.1</maven.compiler.version>
@@ -39,12 +38,6 @@
             <version>${graph.core}</version>
         </dependency>
 
-        <!-- SBML lib -->
-        <dependency>
-            <groupId>org.sbml.jsbml</groupId>
-            <artifactId>jsbml</artifactId>
-            <version>${sbml.lib.version}</version>
-        </dependency>
 
         <!--JSAP console reader-->
         <dependency>
@@ -88,13 +81,6 @@
             </snapshots>
         </repository>
 
-        <!-- SBML repo -->
-        <repository>
-            <id>ebi-repo</id>
-            <name>The EBI repository</name>
-            <url>http://www.ebi.ac.uk/~maven/m2repo</url>
-            <releases><enabled>true</enabled></releases>
-        </repository>
     </repositories>
 
 </project>
