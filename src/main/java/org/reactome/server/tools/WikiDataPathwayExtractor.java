@@ -11,9 +11,8 @@ import java.util.List;
 /**
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
-class WikiDataPathwayExtractor extends ExtractorBase{
+class WikiDataPathwayExtractor extends EventExtractorBase{
 
-    private String mParentId = null;
     /**
      * Construct an instance of the WikiDataPathwayExtractor
      */
@@ -28,7 +27,7 @@ class WikiDataPathwayExtractor extends ExtractorBase{
      * @param pathway  Pathway from ReactomeDB
      */
     public WikiDataPathwayExtractor(Pathway pathway){
-        super((DatabaseObject)(pathway));
+        super((Event)(pathway));
     }
 
     /**
@@ -39,7 +38,7 @@ class WikiDataPathwayExtractor extends ExtractorBase{
      * @param version Integer - version number of the database
      */
     public WikiDataPathwayExtractor(Pathway pathway, Integer version){
-        super((DatabaseObject)(pathway), version);
+        super((Event)(pathway), version);
     }
 
     /**
@@ -51,8 +50,8 @@ class WikiDataPathwayExtractor extends ExtractorBase{
      * @param parentId - the string representation of the id of the parent pathway
      */
     public WikiDataPathwayExtractor(Pathway pathway, Integer version, String parentId){
-        super((DatabaseObject)(pathway), version);
-        mParentId = parentId;
+        super((Event)(pathway), version);
+        setParent(parentId);
     }
 
    /**
@@ -69,26 +68,19 @@ class WikiDataPathwayExtractor extends ExtractorBase{
             wdEntry = "invalid pathway";
         }
         else {
-            String stId = getIdentifier();
-            String name = getName();
+            String stId = getStableID();
+            String name = getEntryName();
             String description = composeDescription(name);
             String publications = getPublicationList();
             String goterm = getGoTerm();
             String parts = getParts();
-            String partof = getParents();
+            String partof = getParent();
 
             wdEntry = String.format(format, species, stId, eventType, name, description, publications, goterm, parts, partof);
         }
     }
 
-    /**
-     * Set the pathway id of the parent; only used when looping thru data
-     *
-     * @param pathway the stable id of the parent pathway
-     */
-    public void setParentPathway(String pathway) {mParentId = pathway; }
-
-    //////////////////////////////////////////////////////////////////////////////////
+     //////////////////////////////////////////////////////////////////////////////////
 
     // Private functions
 
@@ -112,77 +104,4 @@ class WikiDataPathwayExtractor extends ExtractorBase{
         }
         return parts;
     }
-
-    private String getPhysicalEntityReference(PhysicalEntity pe) {
-        String strref = "";
-//        if (pe instanceof SimpleEntity){
-//        }
-        if (pe instanceof EntityWithAccessionedSequence){
-            ReferenceEntity ref = ((EntityWithAccessionedSequence)(pe)).getReferenceEntity();
-            if (ref != null) {
-                String db = ref.getDatabaseName();
-                String uni = "UniProt";
-                if (db.equals(uni)) {
-                    strref = ref.getIdentifier();
-                }
-            }
-            ref = null;
-        }
-//        else if (pe instanceof Complex){
-//            List<PhysicalEntity> components = ((Complex)(pe)).getHasComponent();
-//            if (components != null) {
-//                for (PhysicalEntity component : components) {
-//                    if (strref.length() > 0)
-//                        strref = strref + ";";
-//                    strref = strref + getPhysicalEntityReference(component);
-//                }
-//            }
-//            components = null;
-//        }
-//        else if (pe instanceof EntitySet){
-//        }
-//        else if (pe instanceof Polymer){
-//        }
-//        else {
-//        }
-        return strref;
-    }
-
-    private String getParents() {
-        if (mParentId == null){
-            return "";
-        }
-        return mParentId;
-    }
-
-    private String getGoTerm() {
-        String goterm = "";
-//        GO_BiologicalProcess go = thisReaction.getGoBiologicalProcess();
-        GO_BiologicalProcess go = ((Pathway)thisObject).getGoBiologicalProcess();
-        if (go == null) {
-            return goterm;
-        }
-        goterm = "GO:" + go.getAccession();
-        return goterm;
-    }
-
-    private String getPublicationList() {
-        String pubs = "";
-        List<Publication> publications = ((Pathway) thisObject).getLiteratureReference();
-        if (publications == null || publications.size() == 0) {
-            return pubs;
-        }
-        for (Publication pub : publications) {
-            if (pub instanceof LiteratureReference) {
-                Integer pubmed = ((LiteratureReference) pub).getPubMedIdentifier();
-                if (pubmed != null && pubmed != 0) {
-                    if (pubs.length() > 0)
-                        pubs = pubs + ";";
-                    pubs = pubs + "http://identifiers.org/pubmed/" + pubmed.toString();
-                }
-            }
-        }
-        return pubs;
-    }
-
 }

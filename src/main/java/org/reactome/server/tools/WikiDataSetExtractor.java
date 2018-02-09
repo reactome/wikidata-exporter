@@ -56,7 +56,7 @@ class WikiDataSetExtractor extends PEExtractorBase{
             wdEntry = "invalid entity";
         }
         else {
-            String stId = getIdentifier();
+            String stId = getStableID();
             String parts = getParts();
             String setType = getSetType();
             wdEntry = String.format(format, species, setType, stId, parts);

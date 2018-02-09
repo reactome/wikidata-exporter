@@ -56,7 +56,7 @@ class WikiDataComplexExtractor extends PEExtractorBase{
             wdEntry = "invalid complex";
         }
         else {
-            String stId = getIdentifier();
+            String stId = getStableID();
             String parts = getParts();
             wdEntry = String.format(format, species, "COMP", stId, parts);
         }
