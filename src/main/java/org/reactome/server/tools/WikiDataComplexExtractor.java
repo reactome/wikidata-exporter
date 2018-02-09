@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
-class WikiDataComplexExtractor extends PEExtractorBase{
+class WikiDataComplexExtractor extends ExtractorBase{
 
 
     /**

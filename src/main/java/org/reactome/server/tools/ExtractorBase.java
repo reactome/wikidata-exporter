@@ -22,6 +22,8 @@ class ExtractorBase {
 
     public static DatabaseObject thisObject;
 
+    public ArrayList<TypeCounter> count;// = new ArrayList<TypeCounter>();
+
 
     /**
      * Construct an instance of the ExtractorBase
@@ -29,6 +31,7 @@ class ExtractorBase {
     public ExtractorBase(){
         wdEntry  = "";
         thisObject = null;
+        count = new ArrayList<TypeCounter>();
     }
 
     /**
@@ -39,7 +42,7 @@ class ExtractorBase {
     public ExtractorBase(DatabaseObject object) {
         wdEntry  = "";
         thisObject = object;
-
+        count = new ArrayList<TypeCounter>();
     }
 
     /**
@@ -52,6 +55,7 @@ class ExtractorBase {
         wdEntry  = "";
         thisObject = object;
         dbVersion = version;
+        count = new ArrayList<TypeCounter>();
     }
 
     /**
@@ -126,6 +130,98 @@ class ExtractorBase {
         return name_nocommas;
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    // functions to output resulting string
+
+    /**
+     * create string describing the physical entity structure within Reactome
+     *
+     * @return  String representing the structure
+     */
+    public String extractStructure(){
+        String structure = null;
+        int num = count.size();
+        if (num == 0) return null;
+        int numAdded = 0;
+        if (num > 0) {
+            structure = "";
+            for (TypeCounter tc : count){
+                String struct = String.format("%s %s %d %s", tc.getType(), tc.getName(), tc.getCount(), tc.getStId());
+                structure += struct;
+                numAdded++;
+                if (numAdded < num){
+                    structure += ";";
+                }
+            }
+        }
+        return structure;
+    }
+
+
+    /**
+     * Add the identifier of the referenced entity to the list
+     *
+     * @param pe  PhysicalEntity to process
+     *
+     * @return true if all components have been referenced, false otherwise
+     */
+    public boolean addComponentId(PhysicalEntity pe) {
+        boolean complete = false;
+        String id = pe.getStId();
+        String refid = null;
+        String type = null;
+        if (pe instanceof SimpleEntity){
+            type = "SE";
+            ReferenceMolecule ref = ((SimpleEntity)pe).getReferenceEntity();
+            if (ref != null) {
+                refid = ref.getIdentifier();
+            }
+        }
+        else if (pe instanceof EntityWithAccessionedSequence){
+            type = "EWAS";
+            ReferenceSequence ref = ((EntityWithAccessionedSequence)pe).getReferenceEntity();
+            if (ref != null) {
+                refid = ref.getIdentifier();
+            }
+        }
+        else if (pe instanceof GenomeEncodedEntity){
+            type = "GEE";
+        }
+        else if (pe instanceof CandidateSet){
+            type = "CS";
+        }
+        else if (pe instanceof DefinedSet){
+            type = "DS";
+        }
+        else if (pe instanceof OpenSet){
+            type = "OS";
+        }
+        else if (pe instanceof Complex){
+            type = "COMP";
+        }
+        else {
+            type = "UNKNOWN";
+        }
+
+        if (id != null) {
+            for (TypeCounter tc: count) {
+                if (tc.getStId().equals(id)) {
+                    tc.incrementCount();
+                    complete = true;
+                    break;
+                }
+            }
+            if (!complete){
+                TypeCounter tc1 = new TypeCounter(id, refid, type);
+                tc1.incrementCount();
+                count.add(tc1);
+                complete = true;
+            }
+
+        }
+        return complete;
+    }
 
 }
 

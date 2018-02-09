@@ -13,12 +13,13 @@ import org.reactome.server.tools.config.GraphNeo4jConfig;
  */
 @RunWith(value=Suite.class)
 
-//@Suite.SuiteClasses(value={TestWDExtractComplex.class})
+//@Suite.SuiteClasses(value={TestWDExtractReaction.class})
 
 @Suite.SuiteClasses(value={
         TestWDExtractPathway.class, TestWDExtractGOTerm.class,
         TestWDExtractMultiplePathways.class, TestWDErrors.class,
-        TestWDExtractComplex.class, TestWDExtractSet.class
+        TestWDExtractComplex.class, TestWDExtractSet.class,
+        TestWDExtractReaction.class
 })
 
 
