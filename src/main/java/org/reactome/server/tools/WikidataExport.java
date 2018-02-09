@@ -22,7 +22,9 @@ import java.util.*;
 public class WikidataExport {
 
     private static String outputfilename = "";
-    private static String defaultFilename = "reactome_data.csv";
+    private static String defaultFilename = "pathway_data.csv";
+    private static String reactionFilename = "reaction_data.csv";
+    private static String entityFilename = "entity_data.csv";
 
     // arguments to determine what to output
     private static long singleId = 0;
@@ -44,6 +46,10 @@ public class WikidataExport {
 
     private static FileWriter fout;
     private static BufferedWriter out;
+    private static FileWriter frout;
+    private static BufferedWriter rout;
+    private static FileWriter feout;
+    private static BufferedWriter eout;
 
     private static List<String> entriesMade = new ArrayList<String>();
 
@@ -122,10 +128,6 @@ public class WikidataExport {
                         outputPath(pathway);
                         updateProgressBar(1);
                     }
-                    else if (reaction != null) {
-                        outputPath(reaction);
-                        updateProgressBar(1);
-                    }
                     break;
                 case ALL_PATWAYS:
                     for (Species s : speciesService.getSpecies()) {
@@ -170,6 +172,12 @@ public class WikidataExport {
             if (out != null) {
                 out.close();
             }
+            if (rout != null) {
+                rout.close();
+            }
+            if (eout != null) {
+                eout.close();
+            }
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -189,6 +197,10 @@ public class WikidataExport {
         try {
             fout = new FileWriter(outputfilename);
             out = new BufferedWriter(fout);
+            frout = new FileWriter(reactionFilename);
+            rout = new BufferedWriter(frout);
+            feout = new FileWriter(entityFilename);
+            eout = new BufferedWriter(feout);
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -268,10 +280,10 @@ public class WikidataExport {
      * @param path ReactomeDB Pathway to output
      */
     private static void outputPath(Pathway path) {
-        WikiDataExtractor wdExtract = new WikiDataExtractor(path, dbVersion);
+        WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(path, dbVersion);
         wdExtract.createWikidataEntry();
         try {
-            writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
+            writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -287,10 +299,10 @@ public class WikidataExport {
         for (Event event: loe) {
             if (event instanceof Pathway) {
                 Pathway child = (Pathway) (event);
-                WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
+                WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(child, dbVersion, path.getStId());
                 wdExtract.createWikidataEntry();
                 try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
+                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
                 } catch (IOException e) {
                     System.err.println("Caught IOException: " + e.getMessage());
                 }
@@ -298,34 +310,71 @@ public class WikidataExport {
             }
             else if (event instanceof ReactionLikeEvent) {
                 ReactionLikeEvent child = (ReactionLikeEvent) (event);
-                WikiDataExtractor wdExtract = new WikiDataExtractor(child, dbVersion, path.getStId());
+                WikiDataReactionExtractor wdExtract = new WikiDataReactionExtractor(child, dbVersion, path.getStId());
                 wdExtract.createWikidataEntry();
                 try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
+                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "R");
                 } catch (IOException e) {
                     System.err.println("Caught IOException: " + e.getMessage());
                 }
-
+                writeParticipants(child);
             }
 
         }
 
     }
 
-    /**
-     * Write the line relating to the pathway to the output file
-     *
-     * @param rle ReactomeDB ReactionLikeEvent to output
-     */
-    private static void outputPath(ReactionLikeEvent rle) {
-        WikiDataExtractor wdExtract = new WikiDataExtractor(rle, dbVersion);
-        wdExtract.createWikidataEntry();
-        try {
-            writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID());
+    private static void writeParticipants(ReactionLikeEvent path) {
+        List<PhysicalEntity> loe = path.getInput();
+        if (loe != null && loe.size() > 0) {
+            for (PhysicalEntity pe: loe) {
+                writeEntity(pe);
+            }
         }
-        catch (IOException e) {
-            System.err.println("Caught IOException: " + e.getMessage());
+        loe = path.getOutput();
+        if (loe != null && loe.size() > 0) {
+            for (PhysicalEntity pe: loe) {
+                writeEntity(pe);
+            }
         }
+        if (path.getCatalystActivity() != null){
+            for (CatalystActivity component: path.getCatalystActivity() ){
+                writeEntity(component.getPhysicalEntity());
+            }
+        }
+        if (path.getRegulatedBy() != null) {
+            for (Regulation reg : path.getRegulatedBy()) {
+                DatabaseObject pe = reg.getRegulator();
+                if (pe instanceof PhysicalEntity) {
+                    writeEntity((PhysicalEntity)(pe));
+                }
+            }
+        }
+
+    }
+
+    private static void writeEntity(PhysicalEntity pe) {
+        if (pe instanceof Complex) {
+            WikiDataComplexExtractor wdExtract = new WikiDataComplexExtractor((Complex) (pe), dbVersion);
+            wdExtract.createWikidataEntry();
+            try {
+                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
+            } catch (IOException e) {
+                System.err.println("Caught IOException: " + e.getMessage());
+            }
+
+        }
+        else if (pe instanceof EntitySet) {
+            WikiDataSetExtractor wdExtract = new WikiDataSetExtractor((EntitySet) (pe), dbVersion);
+            wdExtract.createWikidataEntry();
+            try {
+                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
+            } catch (IOException e) {
+                System.err.println("Caught IOException: " + e.getMessage());
+            }
+
+        }
+
     }
     /**
      * Function to apply content filter to the pathways being added to the export file
@@ -353,13 +402,26 @@ public class WikidataExport {
         return isOK;
     }
 
-    private static void writeLine(String entry, String id) throws IOException {
+    private static void writeLine(String entry, String id, String typeToWrite) throws IOException {
         if (entriesMade.contains(id)){
             return;
         }
         entriesMade.add(id);
-        out.write(entry);
-        out.newLine();
+        if (typeToWrite.equals("P")) {
+            out.write(entry);
+            out.newLine();
+        }
+        else if (typeToWrite.equals("R")) {
+            rout.write(entry);
+            rout.newLine();
+        }
+        else if (typeToWrite.equals("E")){
+            eout.write(entry);
+            eout.newLine();
+        }
+        else {
+            System.out.println("unexpected type " + typeToWrite + " encountered");
+        }
     }
 
     /**

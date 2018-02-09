@@ -14,28 +14,29 @@ import static junit.framework.TestCase.assertTrue;
 /**
  * Unit test for simple WikiDataPathwayExtractor.
  */
-public class TestWDExtractGOTerm {
+public class TestWDExtractReaction {
 
-    private static  Pathway pathway;
-    private static WikiDataPathwayExtractor wdextract;
-    private static String expected = "HSA,R-HSA-73894,P,DNA Repair,"
-            +"An instance of the biological pathway DNA Repair in Homo sapiens,"
-            +"[http://identifiers.org/pubmed/10583946;http://identifiers.org/pubmed/23175119],GO:0006281,"
-            +"[R-HSA-73884;R-HSA-73893;R-HSA-73942;R-HSA-5693532;R-HSA-5696398;R-HSA-5358508;R-HSA-6783310],[],None";
+    private static  ReactionLikeEvent reaction;
+    private static WikiDataReactionExtractor wdextract;
+
+    private static String expected = "HSA,R-HSA-168285,R,Clathrin-Mediated Pit Formation And Endocytosis Of The "
+            +"Influenza Virion,An instance of the biological reaction Clathrin-Mediated Pit Formation And Endocytosis Of The Influenza Virion in "
+            +"Homo sapiens,[],GO:0019065,[COMP null 1 R-FLU-188954],[SE 26667 1 R-ALL-189161;COMP null 1 R-FLU-189171],[COMP null 1 R-HSA-177482],[R-HSA-168275],None";
 
     @BeforeClass
     public static void setup() throws JSAPException {
         DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
-        String dbid = "R-HSA-73894"; // pathway with a single child reaction
-        pathway = (Pathway) databaseObjectService.findById(dbid);
+        String dbid = "R-HSA-168285";
+        reaction = (ReactionLikeEvent) databaseObjectService.findById(dbid);
 
-        wdextract = new WikiDataPathwayExtractor(pathway);
+        wdextract = new WikiDataReactionExtractor(reaction);
+        wdextract.setParent("R-HSA-168275");
     }
 
     @org.junit.Test
     public void testConstructor()
     {
-        Assert.assertTrue( "WikiDataPathwayExtractor constructor failed", wdextract != null );
+        Assert.assertTrue( "WikiDataReactionExtractor constructor failed", wdextract != null );
     }
 
     @org.junit.Test
@@ -44,9 +45,8 @@ public class TestWDExtractGOTerm {
         wdextract.createWikidataEntry();
         String entry = wdextract.getWikidataEntry();
 
-        Assert.assertTrue( "WikiDataPathwayExtractor createEntry failed", entry != null );
+        Assert.assertTrue( "WikiDataReactionExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected);
     }
-
 
 }

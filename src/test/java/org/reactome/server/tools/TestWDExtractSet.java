@@ -12,29 +12,28 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 /**
- * Unit test for simple WikiDataExtractor.
+ * Unit test for simple WikiDataSetExtractor.
  */
-public class TestWDExtractGOTerm2 {
+public class TestWDExtractSet {
 
-    private static  ReactionLikeEvent pathway;
-    private static WikiDataExtractor wdextract;
-    private static String expected = "HSA,R-HSA-8848215,R,ACAT2 condenses 2 Ac-CoA to form ACA-CoA," +
-            "An instance of the biological reaction ACAT2 condenses 2 Ac-CoA to form ACA-CoA in Homo sapiens," +
-    "[http://identifiers.org/pubmed/9380443;http://identifiers.org/pubmed/7911016],,[],[],None";
+    private static  EntitySet complex;
+    private static WikiDataSetExtractor wdextract;
+    private static String expected = "HSA,DS,R-HSA-1602340,[CS null 1 R-HSA-1602341;CS null 1 R-HSA-1602334;" +
+    "CS null 1 R-HSA-1602324;CS null 1 R-HSA-1602342;CS null 1 R-HSA-1602442],None";
 
     @BeforeClass
     public static void setup() throws JSAPException {
         DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
-        String dbid = "R-HSA-8848215"; // pathway with a single child reaction
-        pathway = (ReactionLikeEvent) databaseObjectService.findById(dbid);
+        String dbid = "R-HSA-1602340";
+        complex = (EntitySet) databaseObjectService.findById(dbid);
 
-        wdextract = new WikiDataExtractor(pathway);
+        wdextract = new WikiDataSetExtractor(complex);
     }
 
     @org.junit.Test
     public void testConstructor()
     {
-        Assert.assertTrue( "WikiDataExtractor constructor failed", wdextract != null );
+        Assert.assertTrue( "WikiDataSetExtractor constructor failed", wdextract != null );
     }
 
     @org.junit.Test
@@ -43,9 +42,8 @@ public class TestWDExtractGOTerm2 {
         wdextract.createWikidataEntry();
         String entry = wdextract.getWikidataEntry();
 
-        Assert.assertTrue( "WikiDataExtractor createEntry failed", entry != null );
+        Assert.assertTrue( "WikiDataSetExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected);
     }
-
 
 }

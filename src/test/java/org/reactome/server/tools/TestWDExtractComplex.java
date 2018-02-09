@@ -12,29 +12,27 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 /**
- * Unit test for simple WikiDataPathwayExtractor.
+ * Unit test for simple WikiDataComplexExtractor.
  */
-public class TestWDExtractPathway {
+public class TestWDExtractComplex {
 
-    private static  Pathway pathway;
-    private static WikiDataPathwayExtractor wdextract;
-    private static String expected = "HSA,R-HSA-168275,P,Entry of Influenza Virion into Host Cell via Endocytosis,"
-        +"An instance of the biological pathway Entry of Influenza Virion into Host Cell via Endocytosis in Homo sapiens,[],GO:0019065,"
-    +"[R-HSA-168285],[],None";
+    private static  Complex complex;
+    private static WikiDataComplexExtractor wdextract;
+    private static String expected = "HSA,COMP,R-HSA-2220975,[EWAS P63208 1 R-HSA-187538;EWAS P62877 1 R-HSA-1234142;EWAS Q13616 1 R-HSA-187551;DS null 1 R-HSA-1602340],None";
 
     @BeforeClass
     public static void setup() throws JSAPException {
         DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
-        String dbid = "R-HSA-168275";
-        pathway = (Pathway) databaseObjectService.findById(dbid);
+        String dbid = "R-HSA-2220975";
+        complex = (Complex) databaseObjectService.findById(dbid);
 
-        wdextract = new WikiDataPathwayExtractor(pathway);
+        wdextract = new WikiDataComplexExtractor(complex);
     }
 
     @org.junit.Test
     public void testConstructor()
     {
-        Assert.assertTrue( "WikiDataPathwayExtractor constructor failed", wdextract != null );
+        Assert.assertTrue( "WikiDataComplexExtractor constructor failed", wdextract != null );
     }
 
     @org.junit.Test
@@ -43,7 +41,7 @@ public class TestWDExtractPathway {
         wdextract.createWikidataEntry();
         String entry = wdextract.getWikidataEntry();
 
-        Assert.assertTrue( "WikiDataPathwayExtractor createEntry failed", entry != null );
+        Assert.assertTrue( "WikiDataComplexExtractor createEntry failed", entry != null );
         Assert.assertEquals(entry, expected);
     }
 
