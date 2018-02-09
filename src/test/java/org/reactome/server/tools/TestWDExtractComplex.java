@@ -18,7 +18,7 @@ public class TestWDExtractComplex {
 
     private static  Complex complex;
     private static WikiDataComplexExtractor wdextract;
-    private static String expected = "HSA,R-HSA-2220975,[EWAS P63208 1 R-HSA-187538;EWAS P62877 1 R-HSA-1234142;EWAS Q13616 1 R-HSA-187551;DS null 1 R-HSA-1602340],None";
+    private static String expected = "HSA,COMP,R-HSA-2220975,[EWAS P63208 1 R-HSA-187538;EWAS P62877 1 R-HSA-1234142;EWAS Q13616 1 R-HSA-187551;DS null 1 R-HSA-1602340],None";
 
     @BeforeClass
     public static void setup() throws JSAPException {

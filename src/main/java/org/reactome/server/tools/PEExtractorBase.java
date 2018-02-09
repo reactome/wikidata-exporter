@@ -50,9 +50,9 @@ class PEExtractorBase extends ExtractorBase{
     // functions to output resulting string
 
     /**
-     * create string describing the complex structure within Reactome
+     * create string describing the physical entity structure within Reactome
      *
-     * @return          String representing the complex structure
+     * @return  String representing the structure
      */
     public String extractStructure(){
         String structure = null;
@@ -74,13 +74,13 @@ class PEExtractorBase extends ExtractorBase{
     }
 
 
-        /**
-         * Add the identifier of the referenced entity to the list
-         *
-         * @param pe  PhysicalEntity to process
-         *
-         * @return true if all components have been referenced, false otherwise
-         */
+    /**
+     * Add the identifier of the referenced entity to the list
+     *
+     * @param pe  PhysicalEntity to process
+     *
+     * @return true if all components have been referenced, false otherwise
+     */
     public boolean addComponentId(PhysicalEntity pe) {
         boolean complete = false;
         String id = pe.getStId();
@@ -112,20 +112,12 @@ class PEExtractorBase extends ExtractorBase{
         else if (pe instanceof OpenSet){
             type = "OS";
         }
-//        else if (pe instanceof EntitySet){
-//            type = "EWAS";
-//            ReferenceSequence ref = ((EntityWithAccessionedSequence)pe).getReferenceEntity();
-//            if (ref != null) {
-//                refid = ref.getIdentifier();
-//            }
-//        }
-//        else if (pe instanceof Polymer){
-//                type = "EWAS";
-//                ReferenceSequence ref = ((EntityWithAccessionedSequence)pe).getReferenceEntity();
-//                if (ref != null) {
-//                    refid = ref.getIdentifier();
-//                }
-//        }
+        else if (pe instanceof Complex){
+            type = "COMP";
+        }
+        else {
+            type = "UNKNOWN";
+        }
 
         if (id != null) {
             for (TypeCounter tc: count) {

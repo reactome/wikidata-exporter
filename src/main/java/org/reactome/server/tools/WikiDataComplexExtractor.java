@@ -47,7 +47,7 @@ class WikiDataComplexExtractor extends PEExtractorBase{
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
         // species_code,stableId,[part;part],None
-       String format = "%s,%s,[%s],None";
+       String format = "%s,%s,%s,[%s],None";
 
         String species = "HSA";
         // only complexes
@@ -58,7 +58,7 @@ class WikiDataComplexExtractor extends PEExtractorBase{
         else {
             String stId = getIdentifier();
             String parts = getParts();
-            wdEntry = String.format(format, species, stId, parts);
+            wdEntry = String.format(format, species, "COMP", stId, parts);
         }
     }
 
