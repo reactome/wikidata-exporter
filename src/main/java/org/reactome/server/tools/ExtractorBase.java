@@ -24,6 +24,7 @@ class ExtractorBase {
 
     public ArrayList<TypeCounter> count;// = new ArrayList<TypeCounter>();
 
+    public ArrayList<PhysicalEntity> childEntities;// = new ArrayList<TypeCounter>();
 
     /**
      * Construct an instance of the ExtractorBase
@@ -32,6 +33,7 @@ class ExtractorBase {
         wdEntry  = "";
         thisObject = null;
         count = new ArrayList<TypeCounter>();
+        childEntities = new ArrayList<PhysicalEntity>();
     }
 
     /**
@@ -43,6 +45,7 @@ class ExtractorBase {
         wdEntry  = "";
         thisObject = object;
         count = new ArrayList<TypeCounter>();
+        childEntities = new ArrayList<PhysicalEntity>();
     }
 
     /**
@@ -56,6 +59,7 @@ class ExtractorBase {
         thisObject = object;
         dbVersion = version;
         count = new ArrayList<TypeCounter>();
+        childEntities = new ArrayList<PhysicalEntity>();
     }
 
     /**
@@ -132,7 +136,9 @@ class ExtractorBase {
 
     ///////////////////////////////////////////////////////////////////////////////////
 
-    // functions to output resulting string
+    public ArrayList<PhysicalEntity> getChildEntities() {
+        return childEntities;
+    }
 
     /**
      * create string describing the physical entity structure within Reactome
@@ -190,15 +196,23 @@ class ExtractorBase {
         }
         else if (pe instanceof CandidateSet){
             type = "CS";
+            childEntities.add(pe);
         }
         else if (pe instanceof DefinedSet){
             type = "DS";
+            childEntities.add(pe);
         }
         else if (pe instanceof OpenSet){
             type = "OS";
+            childEntities.add(pe);
         }
         else if (pe instanceof Complex){
             type = "COMP";
+            childEntities.add(pe);
+        }
+        else if (pe instanceof OtherEntity){
+            type = "OE";
+            childEntities.add(pe);
         }
         else {
             type = "UNKNOWN";

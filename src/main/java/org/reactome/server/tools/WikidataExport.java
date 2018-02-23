@@ -52,6 +52,8 @@ public class WikidataExport {
     private static BufferedWriter eout;
 
     private static List<String> entriesMade = new ArrayList<String>();
+    private static List<String> rnEntriesMade = new ArrayList<String>();
+    private static List<String> entityEntriesMade = new ArrayList<String>();
 
     public static void main(String[] args) throws JSAPException {
 
@@ -362,7 +364,7 @@ public class WikidataExport {
             } catch (IOException e) {
                 System.err.println("Caught IOException: " + e.getMessage());
             }
-
+            writeChildEntity(wdExtract.getChildEntities());
         }
         else if (pe instanceof EntitySet) {
             WikiDataSetExtractor wdExtract = new WikiDataSetExtractor((EntitySet) (pe), dbVersion);
@@ -372,9 +374,15 @@ public class WikidataExport {
             } catch (IOException e) {
                 System.err.println("Caught IOException: " + e.getMessage());
             }
-
+            writeChildEntity(wdExtract.getChildEntities());
         }
 
+    }
+
+    public static void writeChildEntity(ArrayList<PhysicalEntity> lope) {
+        for (PhysicalEntity pe :lope) {
+            writeEntity(pe);
+        }
     }
     /**
      * Function to apply content filter to the pathways being added to the export file
@@ -403,19 +411,27 @@ public class WikidataExport {
     }
 
     private static void writeLine(String entry, String id, String typeToWrite) throws IOException {
-        if (entriesMade.contains(id)){
-            return;
-        }
-        entriesMade.add(id);
         if (typeToWrite.equals("P")) {
+            if (entriesMade.contains(id)){
+                return;
+            }
+            entriesMade.add(id);
             out.write(entry);
             out.newLine();
         }
         else if (typeToWrite.equals("R")) {
+            if (rnEntriesMade.contains(id)){
+                return;
+            }
+            rnEntriesMade.add(id);
             rout.write(entry);
             rout.newLine();
         }
         else if (typeToWrite.equals("E")){
+            if (entityEntriesMade.contains(id)){
+                return;
+            }
+            entityEntriesMade.add(id);
             eout.write(entry);
             eout.newLine();
         }
