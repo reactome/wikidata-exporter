@@ -46,8 +46,8 @@ class WikiDataComplexExtractor extends ExtractorBase{
      */
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
-        // species_code,entity_code,name,stableId,[part;part],None
-       String format = "%s,%s,%s,%s,[%s],None";
+        // species_code,entity_code,name,stableId,[part;part],complexportalidNone
+       String format = "%s,%s,%s,%s,[%s],%s,None";
 
         String species = "HSA";
         // only complexes
@@ -59,11 +59,27 @@ class WikiDataComplexExtractor extends ExtractorBase{
             String stId = getStableID();
             String parts = getParts();
             String name = getEntryName();
-            wdEntry = String.format(format, species, "COMP", stId, name, parts);
+            String cpRef = getComplexPortalRef();
+            wdEntry = String.format(format, species, "COMP", stId, name, parts, cpRef);
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
+
+    private String getComplexPortalRef() {
+        String cpId = "";
+        List<DatabaseIdentifier> xrefs = ((Complex) thisObject).getCrossReference();
+        if (xrefs != null) {
+            for (DatabaseIdentifier db: xrefs) {
+                if (db.getDatabaseName().equals("ComplexPortal")) {
+                    cpId = db.getIdentifier();
+                    break;
+                }
+            }
+        }
+        return cpId;
+    }
+
 
     // functions to output resulting string
     private String getParts() {
