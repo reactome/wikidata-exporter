@@ -185,10 +185,16 @@ class ExtractorBase {
             }
         }
         else if (pe instanceof EntityWithAccessionedSequence){
-            type = "EWAS";
-            ReferenceSequence ref = ((EntityWithAccessionedSequence)pe).getReferenceEntity();
-            if (ref != null) {
-                refid = ref.getIdentifier();
+            List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence)pe).getHasModifiedResidue();
+            if (mods != null && mods.size() > 0 ) {
+                type = "EWASMOD";
+            }
+            else {
+                type = "EWAS";
+                ReferenceSequence ref = ((EntityWithAccessionedSequence) pe).getReferenceEntity();
+                if (ref != null) {
+                    refid = ref.getIdentifier();
+                }
             }
         }
         else if (pe instanceof GenomeEncodedEntity){
