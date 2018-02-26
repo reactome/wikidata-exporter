@@ -50,7 +50,7 @@ class WikiDataSetExtractor extends ExtractorBase{
        String format = "%s,%s,%s,%s,[%s],None";
 
         String species = "HSA";
-        // only complexes
+        // only sets
         if (thisObject == null || !(thisObject instanceof EntitySet))
         {
             wdEntry = "invalid entity";

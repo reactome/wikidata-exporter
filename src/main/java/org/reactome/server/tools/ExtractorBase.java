@@ -26,6 +26,8 @@ class ExtractorBase {
 
     public ArrayList<PhysicalEntity> childEntities;// = new ArrayList<TypeCounter>();
 
+    public static ArrayList<String> namesUsed = new ArrayList<String>();
+
     /**
      * Construct an instance of the ExtractorBase
      */
@@ -131,7 +133,22 @@ class ExtractorBase {
             return "";
         }
         String name_nocommas = name.replaceAll(",", ";");
-        return name_nocommas;
+        String[] parts = name_nocommas.split(" \\[");
+        if (namesUsed.contains(parts[0])){
+            if (!namesUsed.contains(name_nocommas)) {
+                namesUsed.add(name_nocommas);
+                return name_nocommas;
+            }
+            else {
+                // this would imply a repeat of an item that will caught elsewhere
+                // System.out.println("Issue with duplicate name " + name_nocommas);
+                return name_nocommas;
+            }
+        }
+        else {
+            namesUsed.add(parts[0]);
+            return parts[0];
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
