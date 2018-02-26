@@ -46,7 +46,7 @@ class WikiDataComplexExtractor extends ExtractorBase{
      */
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
-        // species_code,entity_code,name,stableId,[part;part],complexportalidNone
+        // species_code,entity_code,name,stableId,[part;part],complexportalid,None
        String format = "%s,%s,%s,%s,[%s],%s,None";
 
         String species = "HSA";
