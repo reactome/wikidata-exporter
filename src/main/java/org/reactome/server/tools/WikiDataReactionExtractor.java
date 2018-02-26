@@ -59,7 +59,8 @@ class WikiDataReactionExtractor extends EventExtractorBase {
      */
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry for a Reaction of
-        // species_code,stableId,Name,Description,[publication;publication;..],goterm,[part;part],[partof;partof],None
+        // species_code,stableId,eventType,Name,Description,[publication;publication;..],goterm,
+        // [haspart_input;haspart_input], [haspart_output;], [haspart_mod;..],[partof],None
         String format = "%s,%s,%s,%s,%s,[%s],%s,[%s],[%s],[%s],[%s],None";
 
         String species = "HSA";
