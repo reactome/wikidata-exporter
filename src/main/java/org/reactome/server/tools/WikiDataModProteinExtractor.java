@@ -46,8 +46,8 @@ class WikiDataModProteinExtractor extends ExtractorBase{
      */
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
-        // species_code,entity_code,name,stableId,[part;part],complexportalid,None
-       String format = "%s,%s,%s,%s,None";
+        // species_code,entity_code,name,stableId,uniprotid,[mod, mod],None
+       String format = "%s,%s,%s,%s,%s,[%s]None";
 
         String species = "HSA";
         // only ewas
@@ -58,11 +58,48 @@ class WikiDataModProteinExtractor extends ExtractorBase{
         else {
             String stId = getStableID();
             String name = getEntryName();
-            wdEntry = String.format(format, species, "EWASMOD", stId, name);
+            String uniprot = getProtein();
+            String modres = getModifiedResidues();
+            wdEntry = String.format(format, species, "EWASMOD", stId, name, uniprot, modres);
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
 
+    private String getProtein() {
+        String protein = "";
+        if (thisObject != null) {
+            ReferenceSequence ref = ((EntityWithAccessionedSequence) thisObject).getReferenceEntity();
+            if (ref != null) {
+                protein = ref.getIdentifier();
+            }
+        }
+        return protein;
+    }
+
+    private String getModifiedResidues() {
+        String mod = "";
+        if (thisObject != null) {
+            List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) thisObject).getHasModifiedResidue();
+            boolean single = true;
+            if (mods != null && mods.size() > 0) {
+                for (AbstractModifiedResidue m : mods) {
+                    if (m instanceof TranslationalModification) {
+                        Integer coord = ((TranslationalModification) (m)).getCoordinate();
+                        PsiMod psi = ((TranslationalModification) (m)).getPsiMod();
+                        ReferenceDatabase refdb = psi.getReferenceDatabase();
+                        String thismod = String.format("%s %d", psi.getDisplayName(), coord);
+                        if (single) {
+                            mod = mod + thismod;
+                        } else {
+                            mod = mod + "; " + thismod;
+                        }
+                        single = false;
+                    }
+                }
+            }
+        }
+        return mod;
+    }
 }
 
