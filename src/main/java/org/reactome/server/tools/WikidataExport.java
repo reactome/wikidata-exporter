@@ -25,6 +25,7 @@ public class WikidataExport {
     private static String defaultFilename = "pathway_data.csv";
     private static String reactionFilename = "reaction_data.csv";
     private static String entityFilename = "entity_data.csv";
+    private static String modprotFilename = "modprot_data.csv";
 
     // arguments to determine what to output
     private static long singleId = 0;
@@ -50,10 +51,13 @@ public class WikidataExport {
     private static BufferedWriter rout;
     private static FileWriter feout;
     private static BufferedWriter eout;
+    private static FileWriter fmpout;
+    private static BufferedWriter mpout;
 
     private static List<String> entriesMade = new ArrayList<String>();
     private static List<String> rnEntriesMade = new ArrayList<String>();
     private static List<String> entityEntriesMade = new ArrayList<String>();
+    private static List<String> modprotEntriesMade = new ArrayList<String>();
 
     public static void main(String[] args) throws JSAPException {
 
@@ -180,6 +184,9 @@ public class WikidataExport {
             if (eout != null) {
                 eout.close();
             }
+            if (mpout != null) {
+                mpout.close();
+            }
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -203,6 +210,8 @@ public class WikidataExport {
             rout = new BufferedWriter(frout);
             feout = new FileWriter(entityFilename);
             eout = new BufferedWriter(feout);
+            fmpout = new FileWriter(modprotFilename);
+            mpout = new BufferedWriter(fmpout);
         }
         catch (IOException e) {
             System.err.println("Caught IOException: " + e.getMessage());
@@ -278,8 +287,11 @@ public class WikidataExport {
 
     /**
      * Write the line relating to the pathway to the output file
+     * and call function to deal with children
      *
      * @param path ReactomeDB Pathway to output
+     *
+     * This function makes entries in pathway_data.csv
      */
     private static void outputPath(Pathway path) {
         WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(path, dbVersion);
@@ -294,6 +306,14 @@ public class WikidataExport {
     }
 
 
+    /**
+     * Function to write the direct children of a Pathway
+     * Note this rescurses through any children of children
+     *
+     * @param path Pathway frrom ReactomeDB
+     *
+     *  This function makes entries in pathway_data.csv and reaction_data.csv
+     */
     private static void writeChildren(Pathway path) {
         List<Event> loe = path.getHasEvent();
         if (loe == null || loe.size() == 0)
@@ -326,26 +346,32 @@ public class WikidataExport {
 
     }
 
-    private static void writeParticipants(ReactionLikeEvent path) {
-        List<PhysicalEntity> loe = path.getInput();
+    /**
+     * Function to identify the particpant physical entities of a reaction
+     * and pass them to the writeEntity function
+     *
+     * @param reaction ReactionLikeEvent from ReactomeDB
+     */
+    private static void writeParticipants(ReactionLikeEvent reaction) {
+        List<PhysicalEntity> loe = reaction.getInput();
         if (loe != null && loe.size() > 0) {
             for (PhysicalEntity pe: loe) {
                 writeEntity(pe);
             }
         }
-        loe = path.getOutput();
+        loe = reaction.getOutput();
         if (loe != null && loe.size() > 0) {
             for (PhysicalEntity pe: loe) {
                 writeEntity(pe);
             }
         }
-        if (path.getCatalystActivity() != null){
-            for (CatalystActivity component: path.getCatalystActivity() ){
+        if (reaction.getCatalystActivity() != null){
+            for (CatalystActivity component: reaction.getCatalystActivity() ){
                 writeEntity(component.getPhysicalEntity());
             }
         }
-        if (path.getRegulatedBy() != null) {
-            for (Regulation reg : path.getRegulatedBy()) {
+        if (reaction.getRegulatedBy() != null) {
+            for (Regulation reg : reaction.getRegulatedBy()) {
                 DatabaseObject pe = reg.getRegulator();
                 if (pe instanceof PhysicalEntity) {
                     writeEntity((PhysicalEntity)(pe));
@@ -355,6 +381,14 @@ public class WikidataExport {
 
     }
 
+    /**
+     * Function to write the data about a physical entity that requires its own
+     * wikidata entry i.e. Complex/ EntitySet and recurse through children of the entity
+     *
+     * @param pe PhysicalEntity from ReactomDB
+     *
+     * This function wites to entity_data.csv
+     */
     private static void writeEntity(PhysicalEntity pe) {
         if (pe instanceof Complex) {
             WikiDataComplexExtractor wdExtract = new WikiDataComplexExtractor((Complex) (pe), dbVersion);
@@ -376,14 +410,46 @@ public class WikidataExport {
             }
             writeChildEntity(wdExtract.getChildEntities());
         }
-
+        else if (isModifiedProtein(pe)) {
+            WikiDataModProteinExtractor wdExtract = new WikiDataModProteinExtractor((EntityWithAccessionedSequence) (pe), dbVersion);
+            wdExtract.createWikidataEntry();
+            try {
+                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "MP");
+            } catch (IOException e) {
+                System.err.println("Caught IOException: " + e.getMessage());
+            }
+        }
     }
 
-    public static void writeChildEntity(ArrayList<PhysicalEntity> lope) {
+    /**
+     * Function to determine if a PhysicalEntity is a ModifiedProtein
+     *
+     * @param pe PhysicalEntity from ReactomeDB
+     *
+     * @return true if pe is EWAS and hasModifiedResidue/ false otherwise
+     */
+    private static boolean isModifiedProtein(PhysicalEntity pe) {
+        if (pe instanceof EntityWithAccessionedSequence) {
+            List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) pe).getHasModifiedResidue();
+            if (mods != null && mods.size() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Helper function to loop through a list of PhysicalEntities and call writeEntity
+     *
+     * @param lope ArrayList<PhysicalEntity></PhysicalEntity>
+     */
+    private static void writeChildEntity(ArrayList<PhysicalEntity> lope) {
         for (PhysicalEntity pe :lope) {
             writeEntity(pe);
         }
     }
+
+
     /**
      * Function to apply content filter to the pathways being added to the export file
      *
@@ -410,6 +476,14 @@ public class WikidataExport {
         return isOK;
     }
 
+    /**
+     * Function to write a line to the appropriate data file
+     *
+     * @param entry String the wikidata export information
+     * @param id String stableId of the object related to the entry
+     * @param typeToWrite String indicating which data file to write to
+     * @throws IOException
+     */
     private static void writeLine(String entry, String id, String typeToWrite) throws IOException {
         if (typeToWrite.equals("P")) {
             if (entriesMade.contains(id)){
@@ -434,6 +508,14 @@ public class WikidataExport {
             entityEntriesMade.add(id);
             eout.write(entry);
             eout.newLine();
+        }
+        else if (typeToWrite.equals("MP")){
+            if (modprotEntriesMade.contains(id)){
+                return;
+            }
+            modprotEntriesMade.add(id);
+            mpout.write(entry);
+            mpout.newLine();
         }
         else {
             System.out.println("unexpected type " + typeToWrite + " encountered");
