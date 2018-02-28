@@ -47,7 +47,7 @@ class WikiDataModProteinExtractor extends ExtractorBase{
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
         // species_code,entity_code,name,stableId,uniprotid,[mod, mod],None
-       String format = "%s,%s,%s,%s,%s,[%s]None";
+       String format = "%s,%s,%s,%s,%s,[%s],None";
 
         String species = "HSA";
         // only ewas
