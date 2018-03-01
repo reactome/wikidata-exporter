@@ -92,7 +92,7 @@ class WikiDataModProteinExtractor extends ExtractorBase{
                         if (single) {
                             mod = mod + thismod;
                         } else {
-                            mod = mod + "; " + thismod;
+                            mod = mod + ";" + thismod;
                         }
                         single = false;
                     }
