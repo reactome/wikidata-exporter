@@ -205,6 +205,7 @@ class ExtractorBase {
             List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence)pe).getHasModifiedResidue();
             if (mods != null && mods.size() > 0 ) {
                 type = "EWASMOD";
+                childEntities.add(pe);
             }
             else {
                 type = "EWAS";
