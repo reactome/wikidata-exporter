@@ -12,6 +12,8 @@ import java.util.List;
  */
 class WikiDataModProteinExtractor extends ExtractorBase{
 
+    private String wikiLabel = "";
+
 
     /**
      * Construct an instance of the WikiDataModProteinExtractor
@@ -46,7 +48,7 @@ class WikiDataModProteinExtractor extends ExtractorBase{
      */
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
-        // species_code,entity_code,name,stableId,uniprotid,[mod, mod],None
+        // species_code,entity_code,stableId,uniprotid;name,[mod, mod],None
        String format = "%s,%s,%s,%s,%s,[%s],None";
 
         String species = "HSA";
@@ -57,9 +59,9 @@ class WikiDataModProteinExtractor extends ExtractorBase{
         }
         else {
             String stId = getStableID();
-            String name = getEntryName();
             String uniprot = getProtein();
             String modres = getModifiedResidues();
+            String name = wikiLabel + " phosphorylated";
             wdEntry = String.format(format, species, "EWASMOD", stId, name, uniprot, modres);
         }
     }
@@ -72,9 +74,13 @@ class WikiDataModProteinExtractor extends ExtractorBase{
             ReferenceSequence ref = ((EntityWithAccessionedSequence) thisObject).getReferenceEntity();
             if (ref != null) {
                 protein = ref.getIdentifier();
+                List<String> names = ref.getGeneName();
+                if (names != null && names.size() > 0) {
+                    wikiLabel = wikiLabel + names.get(0);
+                }
             }
         }
-        return protein;
+        return String.format("%s", protein);
     }
 
     private String getModifiedResidues() {
@@ -86,6 +92,7 @@ class WikiDataModProteinExtractor extends ExtractorBase{
                 for (AbstractModifiedResidue m : mods) {
                     if (m instanceof TranslationalModification) {
                         Integer coord = ((TranslationalModification) (m)).getCoordinate();
+                        wikiLabel = wikiLabel + String.format(" ser-%d", coord);
                         PsiMod psi = ((TranslationalModification) (m)).getPsiMod();
                         ReferenceDatabase refdb = psi.getReferenceDatabase();
                         String thismod = String.format("%s %d", psi.getDisplayName(), coord);
