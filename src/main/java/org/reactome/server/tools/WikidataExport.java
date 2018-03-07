@@ -321,23 +321,27 @@ public class WikidataExport {
         for (Event event: loe) {
             if (event instanceof Pathway) {
                 Pathway child = (Pathway) (event);
-                WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(child, dbVersion, path.getStId());
-                wdExtract.createWikidataEntry();
-                try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
-                } catch (IOException e) {
-                    System.err.println("Caught IOException: " + e.getMessage());
+                if (!entriesMade.contains(child.getStId())) {
+                    WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(child, dbVersion, path.getStId());
+                    wdExtract.createWikidataEntry();
+                    try {
+                        writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
+                    } catch (IOException e) {
+                        System.err.println("Caught IOException: " + e.getMessage());
+                    }
                 }
                 writeChildren(child);
             }
             else if (event instanceof ReactionLikeEvent) {
                 ReactionLikeEvent child = (ReactionLikeEvent) (event);
-                WikiDataReactionExtractor wdExtract = new WikiDataReactionExtractor(child, dbVersion, path.getStId());
-                wdExtract.createWikidataEntry();
-                try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "R");
-                } catch (IOException e) {
-                    System.err.println("Caught IOException: " + e.getMessage());
+                if (!rnEntriesMade.contains(child.getStId())) {
+                    WikiDataReactionExtractor wdExtract = new WikiDataReactionExtractor(child, dbVersion, path.getStId());
+                    wdExtract.createWikidataEntry();
+                    try {
+                        writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "R");
+                    } catch (IOException e) {
+                        System.err.println("Caught IOException: " + e.getMessage());
+                    }
                 }
                 writeParticipants(child);
             }
@@ -391,32 +395,38 @@ public class WikidataExport {
      */
     private static void writeEntity(PhysicalEntity pe) {
         if (pe instanceof Complex) {
-            WikiDataComplexExtractor wdExtract = new WikiDataComplexExtractor((Complex) (pe), dbVersion);
-            wdExtract.createWikidataEntry();
-            try {
-                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
-            } catch (IOException e) {
-                System.err.println("Caught IOException: " + e.getMessage());
+            if (!entityEntriesMade.contains(pe.getStId())) {
+                WikiDataComplexExtractor wdExtract = new WikiDataComplexExtractor((Complex) (pe), dbVersion);
+                wdExtract.createWikidataEntry();
+                try {
+                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
+                } catch (IOException e) {
+                    System.err.println("Caught IOException: " + e.getMessage());
+                }
+                writeChildEntity(wdExtract.getChildEntities());
             }
-            writeChildEntity(wdExtract.getChildEntities());
         }
         else if (pe instanceof EntitySet) {
-            WikiDataSetExtractor wdExtract = new WikiDataSetExtractor((EntitySet) (pe), dbVersion);
-            wdExtract.createWikidataEntry();
-            try {
-                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
-            } catch (IOException e) {
-                System.err.println("Caught IOException: " + e.getMessage());
+            if (!entityEntriesMade.contains(pe.getStId())) {
+                WikiDataSetExtractor wdExtract = new WikiDataSetExtractor((EntitySet) (pe), dbVersion);
+                wdExtract.createWikidataEntry();
+                try {
+                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
+                } catch (IOException e) {
+                    System.err.println("Caught IOException: " + e.getMessage());
+                }
+                writeChildEntity(wdExtract.getChildEntities());
             }
-            writeChildEntity(wdExtract.getChildEntities());
         }
         else if (isModifiedProtein(pe)) {
-            WikiDataModProteinExtractor wdExtract = new WikiDataModProteinExtractor((EntityWithAccessionedSequence) (pe), dbVersion);
-            wdExtract.createWikidataEntry();
-            try {
-                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "MP");
-            } catch (IOException e) {
-                System.err.println("Caught IOException: " + e.getMessage());
+            if (!modprotEntriesMade.contains(pe.getStId())) {
+                WikiDataModProteinExtractor wdExtract = new WikiDataModProteinExtractor((EntityWithAccessionedSequence) (pe), dbVersion);
+                wdExtract.createWikidataEntry();
+                try {
+                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "MP");
+                } catch (IOException e) {
+                    System.err.println("Caught IOException: " + e.getMessage());
+                }
             }
         }
     }
