@@ -13,6 +13,7 @@ import java.util.List;
 class WikiDataModProteinExtractor extends ExtractorBase{
 
     private String wikiLabel = "";
+    private String modificationType = "";
 
 
     /**
@@ -61,33 +62,14 @@ class WikiDataModProteinExtractor extends ExtractorBase{
         String stId = getStableID();
         String uniprot = getProtein();
         String modres = getModifiedResidues();
+        String name = wikiLabel;
 
-        if (isReplacedResidue()) {
-            String name = wikiLabel.replace(",", " ");
-            wdEntry = String.format(format, species, "EWASMOD", "R", stId, name, uniprot, modres);
+        if (modificationType.equals("P")) {
+            name = wikiLabel + " phosphorylated";
         }
-        else {
-            String name = wikiLabel + " phosphorylated";
-            wdEntry = String.format(format, species, "EWASMOD", "P", stId, name, uniprot, modres);
-        }
+        wdEntry = String.format(format, species, "EWASMOD", modificationType, stId, name, uniprot, modres);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////
-
-    private boolean isReplacedResidue() {
-        boolean replaced = false;
-        if (thisObject != null) {
-            List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) thisObject).getHasModifiedResidue();
-            if (mods != null && mods.size() > 0) {
-                for (AbstractModifiedResidue m : mods) {
-                    if (m instanceof ReplacedResidue) {
-                        replaced = true;
-                    }
-                }
-            }
-        }
-        return replaced;
-    }
     ///////////////////////////////////////////////////////////////////////////////////
 
     private String getProtein() {
@@ -113,12 +95,19 @@ class WikiDataModProteinExtractor extends ExtractorBase{
             if (mods != null && mods.size() > 0) {
                 for (AbstractModifiedResidue m : mods) {
                     if (m instanceof TranslationalModification) {
+                        modificationType = "P";
                         Integer coord = ((TranslationalModification) (m)).getCoordinate();
-                        wikiLabel = wikiLabel + String.format(" ser-%d", coord);
                         PsiMod psi = ((TranslationalModification) (m)).getPsiMod();
-                        ReferenceDatabase refdb = psi.getReferenceDatabase();
                         String name = psi.getDisplayName().replace(",", " ");
-                        String thismod = String.format("%s %d", name, coord);
+                        String thismod;
+                        if (coord != null) {
+                            wikiLabel = wikiLabel + String.format(" ser-%d", coord);
+                            thismod = String.format("%s %d", name, coord);
+                        }
+                        else {
+                            wikiLabel = wikiLabel + String.format(" ser-unknown");
+                            thismod = String.format("%s unknown", name);
+                        }
                         if (single) {
                             mod = mod + thismod;
                         } else {
@@ -126,25 +115,39 @@ class WikiDataModProteinExtractor extends ExtractorBase{
                         }
                         single = false;
                     }
+                    else if (m instanceof ReplacedResidue) {
+                        modificationType = "R";
+                        Integer coord = ((ReplacedResidue) (m)).getCoordinate();
+                        wikiLabel = m.getDisplayName();
+                        List<PsiMod> psimods = ((ReplacedResidue) (m)).getPsiMod();
+                        for (PsiMod psi : psimods) {
+                            String name = psi.getDisplayName().replace(",", " ");
+                            String thismod;
+                            if (coord != null) {
+                                thismod = String.format("%s %d", name, coord);
+                            }
+                            else {
+                                thismod = String.format("%s unknown", name);
+                            }
+                            if (single) {
+                                mod = mod + thismod;
+                            } else {
+                                mod = mod + ";" + thismod;
+                            }
+                            single = false;
+                        }
+                    }
+//                    else if (m instanceof FragmentInsertionModification) {
+//                        modificationType = "FI";
+//                        Integer coord = ((FragmentInsertionModification) (m)).getCoordinate();
+//                        wikiLabel = m.getDisplayName();
+//                        String thismod = String.format("%s %d", "none", coord);
+//                        mod = mod + thismod;
+//                    }
                 }
                 if (mod.equals("")) {
                     for (AbstractModifiedResidue m : mods) {
-                        if (m instanceof ReplacedResidue) {
-                            Integer coord = ((ReplacedResidue) (m)).getCoordinate();
-                            wikiLabel = m.getDisplayName();
-                            List<PsiMod> psimods = ((ReplacedResidue) (m)).getPsiMod();
-                            for (PsiMod psi : psimods) {
-                                ReferenceDatabase refdb = psi.getReferenceDatabase();
-                                String name = psi.getDisplayName().replace(",", " ");
-                                String thismod = String.format("%s %d", name, coord);
-                                if (single) {
-                                    mod = mod + thismod;
-                                } else {
-                                    mod = mod + ";" + thismod;
-                                }
-                                single = false;
-                            }
-                        }
+                        System.out.println("mod with id " + thisObject.getStId());
                     }
 
                 }
