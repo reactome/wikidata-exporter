@@ -48,24 +48,46 @@ class WikiDataModProteinExtractor extends ExtractorBase{
      */
     public void createWikidataEntry(){
         // currently ReactomeBot expects an entry
-        // species_code,entity_code,stableId,uniprotid;name,[mod, mod],None
-       String format = "%s,%s,%s,%s,%s,[%s],None";
+        // species_code,entity_code,type,stableId,uniprotid;name,[mod, mod],None
+       String format = "%s,%s,%s,%s,%s,%s,[%s],None";
 
         String species = "HSA";
         // only ewas
         if (thisObject == null || !(thisObject instanceof EntityWithAccessionedSequence))
         {
             wdEntry = "invalid EWAS";
+            return;
+        }
+        String stId = getStableID();
+        String uniprot = getProtein();
+        String modres = getModifiedResidues();
+
+        if (isReplacedResidue()) {
+            String name = wikiLabel.replace(",", " ");
+            wdEntry = String.format(format, species, "EWASMOD", "R", stId, name, uniprot, modres);
         }
         else {
-            String stId = getStableID();
-            String uniprot = getProtein();
-            String modres = getModifiedResidues();
             String name = wikiLabel + " phosphorylated";
-            wdEntry = String.format(format, species, "EWASMOD", stId, name, uniprot, modres);
+            wdEntry = String.format(format, species, "EWASMOD", "P", stId, name, uniprot, modres);
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    private boolean isReplacedResidue() {
+        boolean replaced = false;
+        if (thisObject != null) {
+            List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) thisObject).getHasModifiedResidue();
+            if (mods != null && mods.size() > 0) {
+                for (AbstractModifiedResidue m : mods) {
+                    if (m instanceof ReplacedResidue) {
+                        replaced = true;
+                    }
+                }
+            }
+        }
+        return replaced;
+    }
     ///////////////////////////////////////////////////////////////////////////////////
 
     private String getProtein() {
@@ -95,7 +117,8 @@ class WikiDataModProteinExtractor extends ExtractorBase{
                         wikiLabel = wikiLabel + String.format(" ser-%d", coord);
                         PsiMod psi = ((TranslationalModification) (m)).getPsiMod();
                         ReferenceDatabase refdb = psi.getReferenceDatabase();
-                        String thismod = String.format("%s %d", psi.getDisplayName(), coord);
+                        String name = psi.getDisplayName().replace(",", " ");
+                        String thismod = String.format("%s %d", name, coord);
                         if (single) {
                             mod = mod + thismod;
                         } else {
@@ -103,6 +126,27 @@ class WikiDataModProteinExtractor extends ExtractorBase{
                         }
                         single = false;
                     }
+                }
+                if (mod.equals("")) {
+                    for (AbstractModifiedResidue m : mods) {
+                        if (m instanceof ReplacedResidue) {
+                            Integer coord = ((ReplacedResidue) (m)).getCoordinate();
+                            wikiLabel = m.getDisplayName();
+                            List<PsiMod> psimods = ((ReplacedResidue) (m)).getPsiMod();
+                            for (PsiMod psi : psimods) {
+                                ReferenceDatabase refdb = psi.getReferenceDatabase();
+                                String name = psi.getDisplayName().replace(",", " ");
+                                String thismod = String.format("%s %d", name, coord);
+                                if (single) {
+                                    mod = mod + thismod;
+                                } else {
+                                    mod = mod + ";" + thismod;
+                                }
+                                single = false;
+                            }
+                        }
+                    }
+
                 }
             }
         }
