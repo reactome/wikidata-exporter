@@ -58,6 +58,7 @@ public class WikidataExport {
     private static List<String> rnEntriesMade = new ArrayList<String>();
     private static List<String> entityEntriesMade = new ArrayList<String>();
     private static List<String> modprotEntriesMade = new ArrayList<String>();
+    private static List<String> modprotNamesUsed = new ArrayList<String>();
 
     public static void main(String[] args) throws JSAPException {
 
@@ -422,10 +423,24 @@ public class WikidataExport {
             if (!modprotEntriesMade.contains(pe.getStId())) {
                 WikiDataModProteinExtractor wdExtract = new WikiDataModProteinExtractor((EntityWithAccessionedSequence) (pe), dbVersion);
                 wdExtract.createWikidataEntry();
-                try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "MP");
-                } catch (IOException e) {
-                    System.err.println("Caught IOException: " + e.getMessage());
+                String label = wdExtract.getLabelUsed();
+                Integer count = 0;
+                while (count < 3 && modprotNamesUsed.contains(label)) {
+                    wdExtract.modifyLabel();
+                    label = wdExtract.getLabelUsed();
+                    count++;
+                }
+                if (count == 3 && modprotNamesUsed.contains(label)) {
+                    System.out.println("No unique label established for modified protein " + pe.getStId());
+                }
+                else {
+                    modprotNamesUsed.add(label);
+
+                    try {
+                        writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "MP");
+                    } catch (IOException e) {
+                        System.err.println("Caught IOException: " + e.getMessage());
+                    }
                 }
             }
         }

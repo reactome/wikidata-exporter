@@ -14,6 +14,7 @@ class WikiDataModProteinExtractor extends ExtractorBase{
 
     private String wikiLabel = "";
     private String modificationType = "";
+    private boolean labelModified = false;
 
 
     /**
@@ -62,14 +63,36 @@ class WikiDataModProteinExtractor extends ExtractorBase{
         String stId = getStableID();
         String uniprot = getProtein();
         String modres = getModifiedResidues();
-        String name = wikiLabel;
+//        String name = wikiLabel;
 
         if (modificationType.equals("P")) {
-            name = wikiLabel + " phosphorylated";
+            wikiLabel += " phosphorylated";
         }
-        wdEntry = String.format(format, species, "EWASMOD", modificationType, stId, name, uniprot, modres);
+        wdEntry = String.format(format, species, "EWASMOD", modificationType, stId, wikiLabel, uniprot, modres);
     }
 
+    public String getLabelUsed() {
+        return wikiLabel;
+    }
+
+    public void modifyLabel() {
+        String oldwikiLabel = wikiLabel;
+        if (!labelModified) {
+            String compart = "";
+            List<EntityCompartment> comp = ((PhysicalEntity) (thisObject)).getCompartment();
+            if (comp != null && comp.size() > 0) {
+                compart = comp.get(0).getName();
+            }
+            wikiLabel = oldwikiLabel + " [" + compart + "]";
+        }
+        else {
+            wikiLabel = thisObject.getDisplayName();
+        }
+        wikiLabel = wikiLabel.replace(",", " ");
+        wdEntry = wdEntry.replace(oldwikiLabel, wikiLabel);
+        labelModified = true;
+
+    }
     ///////////////////////////////////////////////////////////////////////////////////
 
     private String getProtein() {
