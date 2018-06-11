@@ -1,6 +1,7 @@
 package org.reactome.server.tools;
 
 import com.martiansoftware.jsap.*;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.SimpleDatabaseObject;
 import org.reactome.server.graph.service.DatabaseObjectService;
@@ -21,6 +22,7 @@ import java.util.*;
  */
 public class WikidataExport {
 
+    static Logger log = Logger.getLogger(WikidataExport.class);
     private static String outputfilename = "";
     private static String defaultFilename = "pathway_data.csv";
     private static String reactionFilename = "reaction_data.csv";
@@ -543,7 +545,7 @@ public class WikidataExport {
             mpout.newLine();
         }
         else {
-            System.out.println("unexpected type " + typeToWrite + " encountered");
+            log.error("unexpected type " + typeToWrite + " encountered");
         }
     }
 
