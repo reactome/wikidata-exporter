@@ -1,6 +1,6 @@
 package org.reactome.server.tools;
 
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 
 
@@ -11,6 +11,7 @@ import java.util.List;
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
 class WikiDataModProteinExtractor extends ExtractorBase{
+    static Logger log = Logger.getLogger(WikiDataModProteinExtractor.class);
 
     private String wikiLabel = "";
     private String modificationType = "";
@@ -58,12 +59,12 @@ class WikiDataModProteinExtractor extends ExtractorBase{
         if (thisObject == null || !(thisObject instanceof EntityWithAccessionedSequence))
         {
             wdEntry = "invalid EWAS";
+            log.error("Invalid Protein: " + this.getStableID());
             return;
         }
         String stId = getStableID();
         String uniprot = getProtein();
         String modres = getModifiedResidues();
-//        String name = wikiLabel;
 
         if (modificationType.equals("P")) {
             wikiLabel += " phosphorylated";

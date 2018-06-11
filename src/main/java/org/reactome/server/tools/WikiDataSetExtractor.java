@@ -1,6 +1,7 @@
 package org.reactome.server.tools;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 
 
@@ -12,6 +13,7 @@ import java.util.List;
  */
 class WikiDataSetExtractor extends ExtractorBase{
 
+    static Logger log = Logger.getLogger(WikiDataSetExtractor.class);
 
     /**
      * Construct an instance of the WikiDataSetExtractor
@@ -53,6 +55,7 @@ class WikiDataSetExtractor extends ExtractorBase{
         // only sets
         if (thisObject == null || !(thisObject instanceof EntitySet))
         {
+            log.error("Invalid Set: " + this.getStableID());
             wdEntry = "invalid entity";
         }
         else {
@@ -69,9 +72,16 @@ class WikiDataSetExtractor extends ExtractorBase{
     // functions to output resulting string
     // Private functions
 
+    /**
+     * Function to create a semicolon separated list of information for each member of set
+     *
+     * @note This function uses addComponentId to create a List of TypeCounter objects
+     * and then uses extractStructure to create the string from the List
+     *
+     * @return a string representing the members of the set
+     */
     private String getParts() {
         String parts = "";
-        StringBuilder sb;
         if (thisObject != null) {
             if (((EntitySet)thisObject).getHasMember() != null){
                 for (PhysicalEntity component: ((EntitySet)thisObject).getHasMember() ){
@@ -83,6 +93,15 @@ class WikiDataSetExtractor extends ExtractorBase{
         return parts;
     }
 
+    /**
+     * Function to return a string respresenting the type of set
+     *
+     * @note: "DS" respresents a DefinedSet
+     *        "CS" represents a CandidateSet
+     *        "OS" represents an OpenSet
+     *
+     * @return string representing type of set
+     */
     private String getSetType() {
         String setType = "";
         if (thisObject instanceof DefinedSet) {
@@ -94,6 +113,7 @@ class WikiDataSetExtractor extends ExtractorBase{
         else if (thisObject instanceof OpenSet) {
             setType = "OS";
         }
+        log.warn("Unexpected type of set encountered " + this.getStableID());
         return setType;
     }
 }

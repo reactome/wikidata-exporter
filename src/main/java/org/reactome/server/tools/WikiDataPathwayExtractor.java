@@ -1,17 +1,17 @@
 package org.reactome.server.tools;
 
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.model.Event;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
 class WikiDataPathwayExtractor extends EventExtractorBase{
+    static Logger log = Logger.getLogger(WikiDataPathwayExtractor.class);
 
     /**
      * Construct an instance of the WikiDataPathwayExtractor
@@ -84,13 +84,25 @@ class WikiDataPathwayExtractor extends EventExtractorBase{
 
     // Private functions
 
+    /**
+     * Write the description that will be used in wikidata
+     *
+     * @param name the name of the pathway
+     *
+     * @return a string representing the wikidata description
+     */
     private String composeDescription(String name) {
         return "An instance of the biological pathway " + name + " in Homo sapiens";
     }
 
+    /**
+     * Create a string with semicolon separated list of the stId of child events
+     * of this pathway
+     *
+     * @return string representing the child events or an empty string if there are none
+     */
     private String getParts() {
         String parts = "";
-        StringBuilder sb;
         if (thisObject != null) {
             List<Event> events = ((Pathway) thisObject).getHasEvent();
             if (events == null || events.size() == 0) {
@@ -101,6 +113,9 @@ class WikiDataPathwayExtractor extends EventExtractorBase{
                     parts = parts + ";";
                 parts = parts + e.getStId();
             }
+        }
+        else {
+            log.error("No database object set.");
         }
         return parts;
     }

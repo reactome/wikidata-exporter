@@ -1,6 +1,7 @@
 package org.reactome.server.tools;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 
 
@@ -11,6 +12,7 @@ import java.util.List;
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
 class WikiDataComplexExtractor extends ExtractorBase{
+    static Logger log = Logger.getLogger(WikiDataComplexExtractor.class);
 
 
     /**
@@ -53,6 +55,7 @@ class WikiDataComplexExtractor extends ExtractorBase{
         // only complexes
         if (thisObject == null || !(thisObject instanceof Complex))
         {
+            log.error("Invalid Complex: " + this.getStableID());
             wdEntry = "invalid complex";
         }
         else {
@@ -66,6 +69,13 @@ class WikiDataComplexExtractor extends ExtractorBase{
 
     ///////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Function to get the Complex Portal id
+     *
+     * @note: This will facilitate adding a cross reference once ComplexPortal is in Wikidata
+     *
+     * @return string representing ComplexPortal Id
+     */
     private String getComplexPortalRef() {
         String cpId = "";
         List<DatabaseIdentifier> xrefs = ((Complex) thisObject).getCrossReference();
@@ -81,10 +91,16 @@ class WikiDataComplexExtractor extends ExtractorBase{
     }
 
 
-    // functions to output resulting string
+    /**
+     * Function to create a semicolon separated list of information for each component of complex
+     *
+     * @note This function uses addComponentId to create a List of TypeCounter objects
+     * and then uses extractStructure to create the string from the List
+     *
+     * @return a string representing the members of the set
+     */
     private String getParts() {
         String parts = "";
-        StringBuilder sb;
         if (thisObject != null) {
             if (((Complex)thisObject).getHasComponent() != null){
                 for (PhysicalEntity component: ((Complex)thisObject).getHasComponent() ){

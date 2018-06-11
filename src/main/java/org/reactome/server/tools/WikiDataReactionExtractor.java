@@ -105,7 +105,7 @@ class WikiDataReactionExtractor extends EventExtractorBase {
      * Function to create a semicolon separated list of information for each input
      *
      * @note This function uses addComponentId to create a List of TypeCounter objects
-     * and then uses extractStructure to create teh string from the List
+     * and then uses extractStructure to create the string from the List
      *
      * @return a string representing the inputs to the ReactionLikeEvent
      */
@@ -128,7 +128,7 @@ class WikiDataReactionExtractor extends EventExtractorBase {
      * Function to create a semicolon separated list of information for each outpur
      *
      * @note This function uses addComponentId to create a List of TypeCounter objects
-     * and then uses extractStructure to create teh string from the List
+     * and then uses extractStructure to create the string from the List
      *
      * @return a string representing the outputs from the ReactionLikeEvent
      */
@@ -151,7 +151,7 @@ class WikiDataReactionExtractor extends EventExtractorBase {
      * This includes catalysts and regulators
      *
      * @note This function uses addComponentId to create a List of TypeCounter objects
-     * and then uses extractStructure to create teh string from the List
+     * and then uses extractStructure to create the string from the List
      *
      * @return a string representing the modifiers to the ReactionLikeEvent
      */
