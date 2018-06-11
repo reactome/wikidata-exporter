@@ -1,6 +1,6 @@
 package org.reactome.server.tools;
 
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 
 
@@ -15,6 +15,7 @@ import java.util.List;
  * Base class for all Extractor classes
  */
 class ExtractorBase {
+    static Logger log = Logger.getLogger(ExtractorBase.class);
 
     public static Integer dbVersion = 0;
 
@@ -77,11 +78,13 @@ class ExtractorBase {
      * Get the stable identifier from the DatabaseObject
      *
      * @return String representing the stable identifier from ReactomeDB
+     * or an empty string if no database object has been set
      */
     public String getStableID() {
         if (thisObject != null)
             return thisObject.getStId();
         else
+            log.error("No database object set.");
             return "";
     }
 
@@ -123,6 +126,7 @@ class ExtractorBase {
      * Function to adjust display name as appropriate
      *
      * @return String representing the name to used in wikidata entry
+     * or an empty string if no database object is present
      */
     private String getName() {
         String name;
@@ -130,6 +134,7 @@ class ExtractorBase {
             name = thisObject.getDisplayName();
         }
         catch (NullPointerException e) {
+            log.error("No database object set.");
             return "";
         }
         String name_nocommas = name.replaceAll(",", ";");
@@ -240,6 +245,7 @@ class ExtractorBase {
         }
         else {
             type = "UNKNOWN";
+            log.error("Unknown PhysicalEntity type." + id);
         }
 
         if (id != null) {
