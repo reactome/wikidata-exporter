@@ -71,6 +71,7 @@ class EventExtractorBase extends ExtractorBase{
      */
     public String getParent() {
         if (mParentId == null){
+            log.warn("Parent event not set" + this.getStableID());
             return "";
         }
         return mParentId;
@@ -80,42 +81,51 @@ class EventExtractorBase extends ExtractorBase{
 
     // Private functions
 
-//    private String composeDescription(String name) {
-//        return "An instance of the biological event " + name + " in Homo sapiens";
-//    }
-//
-//    private String getParts() {
-//        String parts = "";
-//        StringBuilder sb;
-//        if (thisObject != null) {
-//            List<Event> events = ((Event) thisObject).getHasEvent();
-//            if (events == null || events.size() == 0) {
-//                return parts;
-//            }
-//            for (Event e : events) {
-//                if (parts.length() > 0)
-//                    parts = parts + ";";
-//                parts = parts + e.getStId();
-//            }
-//        }
-//        return parts;
-//    }
-
-    public String getGoTerm() {
+    /**
+     * Return the Go term for the Reactome DB Event as a string
+     *
+     * @return a string representing the GO:NNN biological process accession number
+     * or an empty string if there is no GO term associated with the Event
+     */
+    protected String getGoTerm() {
         String goterm = "";
-        GO_BiologicalProcess go = ((Event)thisObject).getGoBiologicalProcess();
-        if (go == null) {
-            return goterm;
+        GO_BiologicalProcess go;
+        try {
+            go = ((Event)thisObject).getGoBiologicalProcess();
         }
+        catch (NullPointerException e) {
+            log.error("No database object set.");
+            return "";
+        }
+
+        if (go == null) {
+            return "";
+        }
+
         goterm = "GO:" + go.getAccession();
         return goterm;
     }
 
-    public String getPublicationList() {
+    /**
+     * Return a semi-colon separated string list of all publications referenced;
+     * adding https://identifiers.org/pubmed/ to each entry
+     *
+     * @return string list of publications
+     * or empty string if there are none
+     */
+    protected String getPublicationList() {
         String pubs = "";
-        List<Publication> publications = ((Event) thisObject).getLiteratureReference();
+        List<Publication> publications;
+        try {
+            publications = ((Event) thisObject).getLiteratureReference();
+        }
+        catch (NullPointerException e) {
+            log.error("No database object set.");
+            return "";
+        }
+
         if (publications == null || publications.size() == 0) {
-            return pubs;
+            return "";
         }
         for (Publication pub : publications) {
             if (pub instanceof LiteratureReference) {
@@ -123,7 +133,7 @@ class EventExtractorBase extends ExtractorBase{
                 if (pubmed != null && pubmed != 0) {
                     if (pubs.length() > 0)
                         pubs = pubs + ";";
-                    pubs = pubs + "http://identifiers.org/pubmed/" + pubmed.toString();
+                    pubs = pubs + "https://identifiers.org/pubmed/" + pubmed.toString();
                 }
             }
         }
