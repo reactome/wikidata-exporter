@@ -163,9 +163,11 @@ class ExtractorBase {
     }
 
     /**
-     * create string describing the physical entity structure within Reactome
+     * Create string describing the physical entity structure within Reactome
      *
-     * @return  String representing the structure
+     * @return  String representing the structure semicolon separated list of
+     * type name number stId for each PhysicalEntity that has been entered in the
+     * TypeCounter
      */
     public String extractStructure(){
         String structure = null;
@@ -175,7 +177,8 @@ class ExtractorBase {
         if (num > 0) {
             structure = "";
             for (TypeCounter tc : count){
-                String struct = String.format("%s %s %d %s", tc.getType(), tc.getName(), tc.getCount(), tc.getStId());
+                String struct = String.format("%s %s %d %s", tc.getType(), tc.getName(), tc.getCount(),
+                        tc.getStId());
                 structure += struct;
                 numAdded++;
                 if (numAdded < num){
@@ -188,9 +191,10 @@ class ExtractorBase {
 
 
     /**
-     * Add the identifier of the referenced entity to the list
+     * Add the identifier of the referenced entity to the TypeCounter instance
      *
      * @param pe  PhysicalEntity to process
+     *
      *
      * @return true if all components have been referenced, false otherwise
      */

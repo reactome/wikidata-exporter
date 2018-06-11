@@ -1,6 +1,6 @@
 package org.reactome.server.tools;
 
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.model.Event;
 
@@ -12,6 +12,8 @@ import java.util.List;
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
 class WikiDataReactionExtractor extends EventExtractorBase {
+
+    static Logger log = Logger.getLogger(EventExtractorBase.class);
 
     /**
      * Construct an instance of the WikiDataReactionExtractor
@@ -66,6 +68,7 @@ class WikiDataReactionExtractor extends EventExtractorBase {
         String species = "HSA";
         String eventType = "R";
         if (thisObject == null || !(thisObject instanceof ReactionLikeEvent)) {
+            log.error("Invalid ReactionLikeEvent: " + this.getStableID());
             wdEntry = "invalid reaction";
         }
         else {
@@ -87,14 +90,28 @@ class WikiDataReactionExtractor extends EventExtractorBase {
 
     // Private functions
 
+    /**
+     * Write the description that will be used in wikidata
+     *
+     * @param name the name of the reaction
+     *
+     * @return a string representing the wikidata description
+     */
     private String composeDescription(String name) {
         return "An instance of the biological reaction " + name + " in Homo sapiens";
     }
 
+    /**
+     * Function to create a semicolon separated list of information for each input
+     *
+     * @note This function uses addComponentId to create a List of TypeCounter objects
+     * and then uses extractStructure to create teh string from the List
+     *
+     * @return a string representing the inputs to the ReactionLikeEvent
+     */
     private String getInputParts() {
         count.clear();
         String parts = "";
-        StringBuilder sb;
         if (thisObject != null) {
             if (((ReactionLikeEvent)thisObject).getInput() != null){
                 for (PhysicalEntity component: ((ReactionLikeEvent)thisObject).getInput() ){
@@ -105,10 +122,19 @@ class WikiDataReactionExtractor extends EventExtractorBase {
         }
         return parts;
     }
+
+
+    /**
+     * Function to create a semicolon separated list of information for each outpur
+     *
+     * @note This function uses addComponentId to create a List of TypeCounter objects
+     * and then uses extractStructure to create teh string from the List
+     *
+     * @return a string representing the outputs from the ReactionLikeEvent
+     */
     private String getOutputParts() {
         count.clear();
         String parts = "";
-        StringBuilder sb;
         if (thisObject != null) {
             if (((ReactionLikeEvent)thisObject).getOutput() != null){
                 for (PhysicalEntity component: ((ReactionLikeEvent)thisObject).getOutput() ){
@@ -119,10 +145,19 @@ class WikiDataReactionExtractor extends EventExtractorBase {
         }
         return parts;
     }
+
+    /**
+     * Function to create a semicolon separated list of information for each modifier.
+     * This includes catalysts and regulators
+     *
+     * @note This function uses addComponentId to create a List of TypeCounter objects
+     * and then uses extractStructure to create teh string from the List
+     *
+     * @return a string representing the modifiers to the ReactionLikeEvent
+     */
     private String getModifierParts() {
         count.clear();
         String parts = "";
-        StringBuilder sb;
         if (thisObject != null) {
             if (((ReactionLikeEvent)thisObject).getCatalystActivity() != null){
                 for (CatalystActivity component: ((ReactionLikeEvent)thisObject).getCatalystActivity() ){

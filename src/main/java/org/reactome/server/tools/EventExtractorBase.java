@@ -1,6 +1,7 @@
 package org.reactome.server.tools;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.model.Event;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * @author Sarah Keating <skeating@ebi.ac.uk>
  */
 class EventExtractorBase extends ExtractorBase{
+    static Logger log = Logger.getLogger(EventExtractorBase.class);
 
     private String mParentId = null;
     /**
