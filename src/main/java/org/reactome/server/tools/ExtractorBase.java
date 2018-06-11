@@ -245,7 +245,7 @@ class ExtractorBase {
         }
         else {
             type = "UNKNOWN";
-            log.error("Unknown PhysicalEntity type." + id);
+            log.warn("Unknown PhysicalEntity type: " + pe.getClassName() + ": " + id);
         }
 
         if (id != null) {
