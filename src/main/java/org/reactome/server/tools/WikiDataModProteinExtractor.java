@@ -79,7 +79,7 @@ class WikiDataModProteinExtractor extends ExtractorBase{
         String oldwikiLabel = wikiLabel;
         if (!labelModified) {
             String compart = "";
-            List<EntityCompartment> comp = ((PhysicalEntity) (thisObject)).getCompartment();
+            List<Compartment> comp = ((PhysicalEntity) (thisObject)).getCompartment();
             if (comp != null && comp.size() > 0) {
                 compart = comp.get(0).getName();
             }
