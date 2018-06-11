@@ -126,13 +126,15 @@ class WikiDataReactionExtractor extends EventExtractorBase {
         if (thisObject != null) {
             if (((ReactionLikeEvent)thisObject).getCatalystActivity() != null){
                 for (CatalystActivity component: ((ReactionLikeEvent)thisObject).getCatalystActivity() ){
-                    addComponentId(component.getPhysicalEntity());
+                    if (component.getPhysicalEntity() != null) {
+                        addComponentId(component.getPhysicalEntity());
+                    }
                 }
             }
             if (((ReactionLikeEvent)thisObject).getRegulatedBy() != null) {
                 for (Regulation reg : ((ReactionLikeEvent)thisObject).getRegulatedBy()) {
                    DatabaseObject pe = reg.getRegulator();
-                    if (pe instanceof PhysicalEntity) {
+                    if (pe != null && pe instanceof PhysicalEntity) {
                         addComponentId((PhysicalEntity)(pe));
                     }
                  }
