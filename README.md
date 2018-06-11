@@ -24,6 +24,18 @@ The following arguments are required
 
 ### Output
 
+Four csv files are written:
+- hsa\_pathway\_data.csv
+- hsa\_reaction\_data.csv
+- hsa\_entity\_data.csv
+- hsa\_modprot\_data.csv
+
+
+These files are read in by the sister code r_wikidata_bot and used to populate/update wikidata entries.
+
+
+
+
 
 ## TO DO
 
