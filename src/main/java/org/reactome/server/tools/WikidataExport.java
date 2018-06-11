@@ -23,23 +23,21 @@ import java.util.*;
 public class WikidataExport {
 
     static Logger log = Logger.getLogger(WikidataExport.class);
-    private static String outputfilename = "";
-    private static String defaultFilename = "pathway_data.csv";
-    private static String reactionFilename = "reaction_data.csv";
-    private static String entityFilename = "entity_data.csv";
-    private static String modprotFilename = "modprot_data.csv";
-
+//  OPTIONS REMOVED AS USEFUL FOR TESTING BUT NOT FOR AUTOMATED USE
     // arguments to determine what to output
     private static long singleId = 0;
-    private static long speciesId = 0;
     private static long[] multipleIds;
     private static String standardId = "";
+
+    // HARDCODED to HomoSapiens
+    private static long speciesId = 48887;
+    private static String speciesCode = "hsa";
 
     private enum Status {
         SINGLE_PATH, ALL_PATWAYS, ALL_PATHWAYS_SPECIES, MULTIPLE_PATHS
     }
 
-    private static Status outputStatus = Status.SINGLE_PATH;
+    private static Status outputStatus = Status.ALL_PATHWAYS_SPECIES;
 
     private static int dbVersion = 0;
     private static int count = 0;
@@ -47,6 +45,11 @@ public class WikidataExport {
     private static final int width = 70;
     private static int total;
 
+    private static String outputdir = ".";
+    private static String outputFilename = "pathway_data.csv";
+    private static String reactionFilename = "reaction_data.csv";
+    private static String entityFilename = "entity_data.csv";
+    private static String modprotFilename = "modprot_data.csv";
     private static FileWriter fout;
     private static BufferedWriter out;
     private static FileWriter frout;
@@ -70,20 +73,23 @@ public class WikidataExport {
                         new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.NOT_REQUIRED, 'b', "port", "The neo4j port"),
                         new FlaggedOption("user", JSAP.STRING_PARSER, "neo4j", JSAP.REQUIRED, 'u', "user", "The neo4j user"),
                         new FlaggedOption("password", JSAP.STRING_PARSER, "reactome", JSAP.REQUIRED, 'p', "password", "The neo4j password"),
-                        new FlaggedOption("outfilename", JSAP.STRING_PARSER, ".", JSAP.REQUIRED, 'o', "output", "The output filename"),
-                        new FlaggedOption("toplevelpath", JSAP.LONG_PARSER, "0", JSAP.NOT_REQUIRED, 't', "toplevelpath", "A single id of a pathway"),
-                        new FlaggedOption("species", JSAP.LONG_PARSER, "0", JSAP.NOT_REQUIRED, 's', "species", "The id of a species"),
+                        new FlaggedOption("outdir", JSAP.STRING_PARSER, ".", JSAP.REQUIRED, 'o', "outdir", "The output directory"),
+//  OPTIONS REMOVED AS USEFUL FOR TESTING BUT NOT FOR AUTOMATED USE
+//                        new FlaggedOption("outfilename", JSAP.STRING_PARSER, ".", JSAP.REQUIRED, 'o', "output", "The output filename"),
+//                        new FlaggedOption("toplevelpath", JSAP.LONG_PARSER, "0", JSAP.NOT_REQUIRED, 't', "toplevelpath", "A single id of a pathway"),
+//                        new FlaggedOption("species", JSAP.LONG_PARSER, "0", JSAP.NOT_REQUIRED, 's', "species", "The id of a species"),
                 }
         );
-        FlaggedOption m = new FlaggedOption("multiple", JSAP.LONG_PARSER, null, JSAP.NOT_REQUIRED, 'm', "multiple", "A list of ids of Pathways");
-        m.setList(true);
-        m.setListSeparator(',');
-        jsap.registerParameter(m);
-
-        FlaggedOption stdId = new FlaggedOption("stId", JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, 'i', "stId", "The standard id of a Pathway");
-        stdId.setList(true);
-        stdId.setListSeparator(',');
-        jsap.registerParameter(stdId);
+        //  OPTIONS REMOVED AS USEFUL FOR TESTING BUT NOT FOR AUTOMATED USE
+//        FlaggedOption m = new FlaggedOption("multiple", JSAP.LONG_PARSER, null, JSAP.NOT_REQUIRED, 'm', "multiple", "A list of ids of Pathways");
+//        m.setList(true);
+//        m.setListSeparator(',');
+//        jsap.registerParameter(m);
+//
+//        FlaggedOption stdId = new FlaggedOption("stId", JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, 'i', "stId", "The standard id of a Pathway");
+//        stdId.setList(true);
+//        stdId.setListSeparator(',');
+//        jsap.registerParameter(stdId);
 
         JSAPResult config = jsap.parse(args);
         if (jsap.messagePrinted()) System.exit(1);
@@ -99,7 +105,8 @@ public class WikidataExport {
         System.out.println("Database name: " + genericService.getDBName());
         System.out.println("Database version: " + genericService.getDBVersion());
 
-        outputStatus = Status.SINGLE_PATH;
+        // HARD CODED to output Homo Sapien data only
+        outputStatus = Status.ALL_PATHWAYS_SPECIES;
         parseAdditionalArguments(config);
         count = 0;
 
@@ -141,6 +148,7 @@ public class WikidataExport {
                 case ALL_PATWAYS:
                     for (Species s : speciesService.getSpecies()) {
                         outputPathsForSpecies(s, schemaService, databaseObjectService);
+                        genericService.clearCache();
                     }
                     break;
                 case ALL_PATHWAYS_SPECIES:
@@ -152,6 +160,7 @@ public class WikidataExport {
                     }
                     if (species != null) {
                         outputPathsForSpecies(species, schemaService, databaseObjectService);
+                        genericService.clearCache();
                     }
                     break;
                 case MULTIPLE_PATHS:
@@ -174,7 +183,7 @@ public class WikidataExport {
                     break;
             }
         } else {
-            System.err.println("Too many arguments detected. Expected either no pathway arguments or one of -t, -s, -m, -l.");
+            System.err.println("Too many arguments detected.");
         }
 
         try {
@@ -192,7 +201,7 @@ public class WikidataExport {
             }
         }
         catch (IOException e) {
-            System.err.println("Caught IOException: " + e.getMessage());
+            log.error("Caught IOException: " + e.getMessage());
         }
     }
 
@@ -202,40 +211,43 @@ public class WikidataExport {
      * @param config JSAPResult result of first parse
      */
     private static void parseAdditionalArguments(JSAPResult config) {
-        outputfilename = config.getString("outfilename");
-        if (outputfilename.length() == 0 || outputfilename.equals(".")) {
-            outputfilename = defaultFilename;
-        }
+//  OPTIONS REMOVED AS USEFUL FOR TESTING BUT NOT FOR AUTOMATED USE
+//        outputfilename = config.getString("outfilename");
+//        if (outputfilename.length() == 0 || outputfilename.equals(".")) {
+//            outputfilename = defaultFilename;
+//        }
+        outputdir = config.getString("outdir");
         try {
-            fout = new FileWriter(outputfilename);
+            fout = new FileWriter(new File(outputdir,speciesCode + "_" + outputFilename));
             out = new BufferedWriter(fout);
-            frout = new FileWriter(reactionFilename);
+            frout = new FileWriter(new File(outputdir,speciesCode + "_" + reactionFilename));
             rout = new BufferedWriter(frout);
-            feout = new FileWriter(entityFilename);
+            feout = new FileWriter(new File(outputdir,speciesCode + "_" + entityFilename));
             eout = new BufferedWriter(feout);
-            fmpout = new FileWriter(modprotFilename);
+            fmpout = new FileWriter(new File(outputdir,speciesCode + "_" + modprotFilename));
             mpout = new BufferedWriter(fmpout);
         }
         catch (IOException e) {
-            System.err.println("Caught IOException: " + e.getMessage());
+            log.error("Caught IOException: " + e.getMessage());
         }
 
-        standardId = config.getString("stId");
-        singleId = config.getLong("toplevelpath");
-        speciesId = config.getLong("species");
-        multipleIds = config.getLongArray("multiple");
-
-        if (singleId == 0 && standardId == null) {
-            if (speciesId == 0) {
-                if (multipleIds.length > 0) {
-                    outputStatus = Status.MULTIPLE_PATHS;
-                } else {
-                    outputStatus = Status.ALL_PATWAYS;
-                }
-            } else {
-                outputStatus = Status.ALL_PATHWAYS_SPECIES;
-            }
-        }
+//  OPTIONS REMOVED AS USEFUL FOR TESTING BUT NOT FOR AUTOMATED USE
+//        standardId = config.getString("stId");
+//        singleId = config.getLong("toplevelpath");
+//        speciesId = config.getLong("species");
+//        multipleIds = config.getLongArray("multiple");
+//
+//        if (singleId == 0 && standardId == null) {
+//            if (speciesId == 0) {
+//                if (multipleIds.length > 0) {
+//                    outputStatus = Status.MULTIPLE_PATHS;
+//                } else {
+//                    outputStatus = Status.ALL_PATWAYS;
+//                }
+//            } else {
+//                outputStatus = Status.ALL_PATHWAYS_SPECIES;
+//            }
+//        }
     }
 
     /**
@@ -244,24 +256,25 @@ public class WikidataExport {
      * @return true if only one argument, false if more than one
      */
     private static boolean singleArgumentSupplied() {
-        if (singleId != 0) {
-            // have -t shouldnt have anything else
-            if (standardId != null || speciesId != 0 || multipleIds.length > 0) {
-                return false;
-            }
-        }
-        else if (standardId != null && standardId.length() > 0) {
-            // have -i shouldnt have anything else
-            if (singleId != 0 ||speciesId != 0 || multipleIds.length > 0) {
-                return false;
-            }
-        }
-        else if (speciesId != 0) {
-            // have -s shouldnt have anything else
-            if (multipleIds.length > 0) {
-                return false;
-            }
-        }
+//  OPTIONS REMOVED AS USEFUL FOR TESTING BUT NOT FOR AUTOMATED USE
+//        if (singleId != 0) {
+//            // have -t shouldnt have anything else
+//            if (standardId != null || speciesId != 0 || multipleIds.length > 0) {
+//                return false;
+//            }
+//        }
+//        else if (standardId != null && standardId.length() > 0) {
+//            // have -i shouldnt have anything else
+//            if (singleId != 0 ||speciesId != 0 || multipleIds.length > 0) {
+//                return false;
+//            }
+//        }
+//        else if (speciesId != 0) {
+//            // have -s shouldnt have anything else
+//            if (multipleIds.length > 0) {
+//                return false;
+//            }
+//        }
         return true;
     }
 
@@ -272,15 +285,17 @@ public class WikidataExport {
      * @param schemaService database service to use
      */
     private static void outputPathsForSpecies(Species species, SchemaService schemaService, DatabaseObjectService databaseObjectService) {
-        total = schemaService.getByClass(Pathway.class, species).size();
+        total = schemaService.getByClass(TopLevelPathway.class, species).size();
         int done = 0;
         System.out.println("\nOutputting pathways for " + species.getDisplayName());
         Collection<SimpleDatabaseObject> pathways = schemaService.getSimpleDatabaseObjectByClass(TopLevelPathway.class, species);
-        for (SimpleDatabaseObject pathway : pathways) {
-            Pathway path = databaseObjectService.findByIdNoRelations(pathway.getStId());
-            if (!is_appropriate(path)) {
-                continue;
-            }
+        Iterator<SimpleDatabaseObject> iterator = pathways.iterator();
+        while (iterator.hasNext()) {
+            Pathway path = databaseObjectService.findByIdNoRelations(iterator.next().getStId());
+            // useful for testing
+//            if (!is_appropriate(path)) {
+//                continue;
+//            }
             outputPath(path);
             done++;
             updateProgressBar(done);
@@ -303,7 +318,7 @@ public class WikidataExport {
             writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
         }
         catch (IOException e) {
-            System.err.println("Caught IOException: " + e.getMessage());
+            log.error("Caught IOException: " + e.getMessage());
         }
         writeChildren(path);
     }
@@ -330,7 +345,7 @@ public class WikidataExport {
                     try {
                         writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
                     } catch (IOException e) {
-                        System.err.println("Caught IOException: " + e.getMessage());
+                        log.error("Caught IOException: " + e.getMessage());
                     }
                 }
                 writeChildren(child);
@@ -343,7 +358,7 @@ public class WikidataExport {
                     try {
                         writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "R");
                     } catch (IOException e) {
-                        System.err.println("Caught IOException: " + e.getMessage());
+                        log.error("Caught IOException: " + e.getMessage());
                     }
                 }
                 writeParticipants(child);
@@ -433,7 +448,7 @@ public class WikidataExport {
                     count++;
                 }
                 if (count == 3 && modprotNamesUsed.contains(label)) {
-                    System.out.println("No unique label established for modified protein " + pe.getStId());
+                    log.warn("No unique label established for modified protein " + pe.getStId());
                 }
                 else {
                     modprotNamesUsed.add(label);
@@ -441,7 +456,7 @@ public class WikidataExport {
                     try {
                         writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "MP");
                     } catch (IOException e) {
-                        System.err.println("Caught IOException: " + e.getMessage());
+                        log.error("Caught IOException: " + e.getMessage());
                     }
                 }
             }
@@ -509,6 +524,12 @@ public class WikidataExport {
      * @param entry String the wikidata export information
      * @param id String stableId of the object related to the entry
      * @param typeToWrite String indicating which data file to write to
+     *
+     * @note typeToWrite values are
+     *        "P" pathway
+     *        "R" reaction
+     *        "E" entity
+     *        "MP" modified protein
      * @throws IOException
      */
     private static void writeLine(String entry, String id, String typeToWrite) throws IOException {
