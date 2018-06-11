@@ -18,7 +18,7 @@ public class TestWDExtractSet {
 
     private static  EntitySet complex;
     private static WikiDataSetExtractor wdextract;
-    private static String expected = "HSA,DS,R-HSA-1602340,FBXW7 WD mutants [nucleoplasm],[CS null 1 R-HSA-1602341;CS null 1 R-HSA-1602334;" +
+    private static String expected = "HSA,DS,R-HSA-1602340,FBXW7 WD mutants,[CS null 1 R-HSA-1602341;CS null 1 R-HSA-1602334;" +
     "CS null 1 R-HSA-1602324;CS null 1 R-HSA-1602342;CS null 1 R-HSA-1602442],None";
 
     @BeforeClass

@@ -20,7 +20,7 @@ public class TestWDExtractGOTerm {
     private static WikiDataPathwayExtractor wdextract;
     private static String expected = "HSA,R-HSA-73894,P,DNA Repair,"
             +"An instance of the biological pathway DNA Repair in Homo sapiens,"
-            +"[http://identifiers.org/pubmed/10583946;http://identifiers.org/pubmed/23175119],GO:0006281,"
+            +"[https://identifiers.org/pubmed/10583946;https://identifiers.org/pubmed/23175119],GO:0006281,"
             +"[R-HSA-73884;R-HSA-73893;R-HSA-73942;R-HSA-5693532;R-HSA-5696398;R-HSA-5358508;R-HSA-6783310],[],None";
 
     @BeforeClass

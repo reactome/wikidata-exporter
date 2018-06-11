@@ -35,7 +35,7 @@ public class Test {
                         new FlaggedOption("password", JSAP.STRING_PARSER, null, JSAP.REQUIRED, 'p', "password", "The neo4j password")
                 }
         );
-        String[] args = {"-h", "localhost", "-b", "7474", "-u", "neo4j", "-p", "j16a3s27"};
+        String[] args = {"-h", "localhost", "-b", "7474", "-u", "neo4j", "-p", "XXXXX"};
         JSAPResult config = jsap.parse(args);
         if (jsap.messagePrinted()) System.exit(1);
         ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), GraphNeo4jConfig.class);
