@@ -60,3 +60,5 @@ target/
 testOutput/
 .idea/
 *.csv
+*.iml
+*.txt
