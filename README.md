@@ -51,7 +51,7 @@ Currently the code only supports the Homo sapiens species. This is hard coded at
 
 **STEP ONE: Export from Reactome**
 
-1. Cloning and packaging the project
+1. Cloning and packaging the wikidata-exporter project
 
 ```console
 git clone https://github.com/reactome/wikidata-exporter.git
@@ -74,7 +74,7 @@ cd ..
 
 STEP TWO: Import to Wikidata
 
-1. Clone the project
+1. Clone the r-wikidata-bot project
 
 ```console
 git clone https://github.com/reactome/r-wikidata-bot.git
@@ -94,6 +94,6 @@ cp ../wikidata-exporter/outputdir/*.csv ./input/*
 python update_wikidata.py Pathwaybot password input ReactomeReleaseNo ReactomeNewsNumberForRelease
 ```
 
-The ReactomeNewsNumberForRelease is part of teh URL that identifies the release: e.g. in https://reactome.org/about/news/103-version-65-released it would be '103'
+The ReactomeNewsNumberForRelease is part of the URL that identifies the release: e.g. in https://reactome.org/about/news/103-version-65-released it would be '103'
 
 Note: This bot can only be run under the 'Pathwaybot' wikidata account.
