@@ -88,12 +88,19 @@ mkdir input
 cp ../wikidata-exporter/outputdir/*.csv ./input/*
 ```
 
-3. Run the import
+3. Update the release_info.txt file
 
-```console
-python update_wikidata.py Pathwaybot password input ReactomeReleaseNo ReactomeNewsNumberForRelease
-```
+This file contains the specifics of *this* release in a format that the code expects. Do NOT change the format, merely change the data.
 
 The ReactomeNewsNumberForRelease is part of the URL that identifies the release: e.g. in https://reactome.org/about/news/103-version-65-released it would be '103'
 
+
+4. Run the import
+
+```console
+python update_wikidata.py
+```
+
+
 Note: This bot can only be run under the 'Pathwaybot' wikidata account.
+
