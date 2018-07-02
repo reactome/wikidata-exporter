@@ -103,7 +103,7 @@ class WikiDataSetExtractor extends ExtractorBase{
      * @return string representing type of set
      */
     private String getSetType() {
-        String setType = "";
+        String setType = "DS";
         if (thisObject instanceof DefinedSet) {
             setType = "DS";
         }
@@ -113,7 +113,9 @@ class WikiDataSetExtractor extends ExtractorBase{
         else if (thisObject instanceof OpenSet) {
             setType = "OS";
         }
-        log.warn("Unexpected type of set encountered " + thisObject.getClassName() + ": " + this.getStableID());
+        else {
+            log.warn("Unexpected type of set encountered " + thisObject.getClassName() + ": " + this.getStableID());
+        }
         return setType;
     }
 }
