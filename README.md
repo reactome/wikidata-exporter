@@ -63,7 +63,7 @@ mvn clean package
 
 ```console
 mkdir outputdir
-java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -output outputdir
+java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -outdir outputdir
 ```
 
 3. Change directory
