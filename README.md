@@ -37,6 +37,7 @@ These files are read in by the sister code r-wikidata-bot and used to populate/u
 ## Limitations
 
 Currently the code only supports the Homo sapiens species. This is hard coded at present but commented out code will facilitate adding other species in the future.
+Polymers and Chemical Drugs are not yet supported by Wikidata and export of these does not yet happen.
 
 
 ---

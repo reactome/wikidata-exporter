@@ -247,6 +247,10 @@ class ExtractorBase {
             type = "OE";
             childEntities.add(pe);
         }
+        else if (pe instanceof Polymer || pe instanceof ChemicalDrug) {
+            // NOT YET DEALT WITH so do not add
+            type = "OE";
+        }
         else {
             type = "UNKNOWN";
             log.warn("Unknown PhysicalEntity type: " + pe.getClassName() + ": " + id);

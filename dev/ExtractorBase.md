@@ -8,7 +8,7 @@ All reports append the stableId of the object being processed when the warning/e
 
 1. Unknown PhysicalEntity type *className* 
 
-A PhysicalEntity that did not exist in the GraphCore database  at time of writing has been used. Code needs to be adapted in the ExtractorBase::addComponentId function.
+A PhysicalEntity that did not exist in the GraphCore database  at time of writing has been used. Code needs to be adapted in the ExtractorBase::addComponentId function. Note: Polymer and Chemical Drug are not yet supported and so are ignored by this warning.
 
 
 ### Errors

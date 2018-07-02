@@ -73,7 +73,10 @@ class EventExtractorBase extends ExtractorBase{
      */
     public String getParent() {
         if (mParentId == null){
-            log.warn("Parent event not set " + this.getStableID());
+            // if it is a ToplevelPathway it wont have a parent
+            if (!(thisObject instanceof TopLevelPathway)) {
+                log.warn("Parent event not set " + this.getStableID());
+            }
             return "";
         }
         return mParentId;
