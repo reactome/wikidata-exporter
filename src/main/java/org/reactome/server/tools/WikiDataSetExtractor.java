@@ -113,7 +113,7 @@ class WikiDataSetExtractor extends ExtractorBase{
         else if (thisObject instanceof OpenSet) {
             setType = "OS";
         }
-        log.warn("Unexpected type of set encountered " + this.getStableID());
+        log.warn("Unexpected type of set encountered " + thisObject.getClassName() + ": " + this.getStableID());
         return setType;
     }
 }

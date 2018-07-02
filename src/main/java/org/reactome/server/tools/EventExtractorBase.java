@@ -73,7 +73,7 @@ class EventExtractorBase extends ExtractorBase{
      */
     public String getParent() {
         if (mParentId == null){
-            log.warn("Parent event not set" + this.getStableID());
+            log.warn("Parent event not set " + this.getStableID());
             return "";
         }
         return mParentId;
@@ -96,7 +96,7 @@ class EventExtractorBase extends ExtractorBase{
             go = ((Event)thisObject).getGoBiologicalProcess();
         }
         catch (NullPointerException e) {
-            log.error("No database object set.");
+            log.error("No GO_BiologicalProcess object set on " + this.getStableID());
             return "";
         }
 
@@ -122,7 +122,7 @@ class EventExtractorBase extends ExtractorBase{
             publications = ((Event) thisObject).getLiteratureReference();
         }
         catch (NullPointerException e) {
-            log.error("No database object set.");
+            log.error("No List<Publication> object set " + this.getStableID());
             return "";
         }
 

@@ -566,7 +566,7 @@ public class WikidataExport {
             mpout.newLine();
         }
         else {
-            log.error("unexpected type " + typeToWrite + " encountered");
+            log.error("Unexpected type " + typeToWrite + " encountered");
         }
     }
 

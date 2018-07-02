@@ -66,19 +66,25 @@ mkdir outputdir
 java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -outdir outputdir
 ```
 
-3. Change directory
+NOTE: This step may take up to 10 minutes.
+
+3. Verification
+
+Inspect the file 'WikidataExporter.log'. 
+
+4. Change directory
 
 ```console
 cd ..
 ```
 
-STEP TWO: Import to Wikidata
+**STEP TWO: Import to Wikidata**
 
 1. Clone the r-wikidata-bot project
 
 ```console
 git clone https://github.com/reactome/r-wikidata-bot.git
-cd wikidata-exporter
+cd r-wikidata-bot
 ```
 
 2. Move the .csv files
@@ -103,4 +109,5 @@ python update_wikidata.py
 
 
 Note: This bot can only be run under the 'Pathwaybot' wikidata account.
+
 
