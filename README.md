@@ -51,6 +51,8 @@ Currently the code only supports the Homo sapiens species. This is hard coded at
 
 **STEP ONE: Export from Reactome**
 
+NOTE: You made need to update the pom.xml file in the wikidata-exporter project if the graph-core has moved beyond version 1.1.10
+
 1. Cloning and packaging the wikidata-exporter project
 
 ```console
@@ -70,7 +72,9 @@ NOTE: This step may take up to 10 minutes.
 
 3. Verification
 
-Inspect the file 'WikidataExporter.log'. 
+Inspect the file 'WikidataExporter.log'. Files in the dev directory expand on what errors or warnings might be issued and how to deal with them.
+
+NOTE: If there are only warnings it is safe to proceed without correcting them.
 
 4. Change directory
 
@@ -98,7 +102,7 @@ cp ../wikidata-exporter/outputdir/*.csv ./input/*
 
 This file contains the specifics of *this* release in a format that the code expects. Do NOT change the format, merely change the data.
 
-The ReactomeNewsNumberForRelease is part of the URL that identifies the release: e.g. in https://reactome.org/about/news/103-version-65-released it would be '103'
+The news_item_no is part of the URL that identifies the release: e.g. in https://reactome.org/about/news/103-version-65-released it would be '103'
 
 
 4. Run the import
