@@ -374,19 +374,7 @@ public class WikidataExport {
                 if (!rnEntriesMade.contains(child.getStId())) {
                     WikiDataReactionExtractor wdExtract = new WikiDataReactionExtractor(child, dbVersion, path.getStId());
                     wdExtract.createWikidataEntry();
-                    String name = wdExtract.getEntryName();
-                    if (rnNamesUsed.contains(name)) {
-                        // do something
-                        System.err.println("Repeated reaction name " + name);
-                    }
-                    else {
-                        rnNamesUsed.add(name);
-                    }
-                    try {
-                        writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "R");
-                    } catch (IOException e) {
-                        log.error("Caught IOException: " + e.getMessage());
-                    }
+                    writeReactionEntry(child, wdExtract, path);
                 }
                 writeParticipants(child);
             }
@@ -394,6 +382,58 @@ public class WikidataExport {
         }
 
     }
+
+
+    /**
+     * Function to write line to reaction.csv - fixing duplicate labels where possible
+     *
+     * @param rle         ReactionLikeEvent from ReactomeDB
+     * @param wdExtract  instance of the Extractor class being used
+     * @param path       parent Pathway from ReactomeDB
+     */
+    private static void writeReactionEntry(ReactionLikeEvent rle, ExtractorBase wdExtract, Pathway path) {
+        boolean writeEntry = true;
+        String name = wdExtract.getEntryName();
+        if (rnNamesUsed.contains(name)) {
+            String replacedname = adjustName(name, path);
+            if (!replacedname.equals("")) {
+                wdExtract.replaceNameUsedInEntry(name, replacedname);
+                rnNamesUsed.add(replacedname);
+            }
+            else {
+                writeEntry = false;
+                System.err.println("Repeated reaction name " + name);
+                log.warn("No unique label established for reaction " + rle.getStId());
+            }
+        }
+        else {
+            rnNamesUsed.add(name);
+        }
+        if (writeEntry) {
+            try {
+                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "R");
+            } catch (IOException e) {
+                System.err.println("Caught IOException: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * function to look for an alternative name for a PhysicalEntity
+     *
+     * @param name   existing name that has already been used
+     * @param rle     from ReactomeDB
+     *
+     * @return string representing a new name or "" if none can be found
+     */
+    private static String adjustName(String name, Pathway path) {
+        String replacedname = "";
+        if (!rnNamesUsed.contains(name + "_" + path.getStId())) {
+            replacedname = name + "_" + path.getStId();
+        }
+        return replacedname;
+    }
+
 
     /**
      * Function to identify the particpant physical entities of a reaction
@@ -498,7 +538,7 @@ public class WikidataExport {
             }
             else {
                 writeEntry = false;
-                System.err.println("Repeated entity name " + name);
+//                System.err.println("Repeated entity name " + name);
                 log.warn("No unique label established for complex " + pe.getStId());
             }
         }
