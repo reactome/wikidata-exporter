@@ -320,7 +320,7 @@ public class WikidataExport {
         String name = wdExtract.getEntryName();
         if (entriesNamesUsed.contains(name)) {
             // do something
-            System.err.println("Repeated pathway name " + name);
+            System.err.println("Repeated pathway name in outputPath" + name);
         }
         else {
             entriesNamesUsed.add(name);
@@ -353,19 +353,20 @@ public class WikidataExport {
                 if (!entriesMade.contains(child.getStId())) {
                     WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(child, dbVersion, path.getStId());
                     wdExtract.createWikidataEntry();
-                    String name = wdExtract.getEntryName();
-                    if (entriesNamesUsed.contains(name)) {
-                        // do something
-                        System.err.println("Repeated pathway name " + name);
-                    }
-                    else {
-                        entriesNamesUsed.add(name);
-                    }
-                    try {
-                        writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
-                    } catch (IOException e) {
-                        log.error("Caught IOException: " + e.getMessage());
-                    }
+                    writePathwayEntry(child, wdExtract, path);
+//                    String name = wdExtract.getEntryName();
+//                    if (entriesNamesUsed.contains(name)) {
+//                        // do something
+//                        System.err.println("Repeated pathway name " + name);
+//                    }
+//                    else {
+//                        entriesNamesUsed.add(name);
+//                    }
+//                    try {
+//                        writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
+//                    } catch (IOException e) {
+//                        log.error("Caught IOException: " + e.getMessage());
+//                    }
                 }
                 writeChildren(child);
             }
@@ -383,6 +384,40 @@ public class WikidataExport {
 
     }
 
+
+    /**
+     * Function to write line to pathway.csv - fixing duplicate labels where possible
+     *
+     * @param path       Pathway from ReactomeDB
+     * @param wdExtract  instance of the Extractor class being used
+     * @param parent       parent Pathway from ReactomeDB
+     */
+    private static void writePathwayEntry(Pathway path, ExtractorBase wdExtract, Pathway parent) {
+        boolean writeEntry = true;
+        String name = wdExtract.getEntryName();
+        if (entriesNamesUsed.contains(name)) {
+            String replacedname = adjustName(name, parent);
+            if (!replacedname.equals("")) {
+                wdExtract.replaceNameUsedInEntry(name, replacedname);
+                entriesNamesUsed.add(replacedname);
+            }
+            else {
+                writeEntry = false;
+                System.err.println("Repeated pathway name " + name);
+                log.warn("No unique label established for pathway " + path.getStId());
+            }
+        }
+        else {
+            entriesNamesUsed.add(name);
+        }
+        if (writeEntry) {
+            try {
+                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
+            } catch (IOException e) {
+                System.err.println("Caught IOException: " + e.getMessage());
+            }
+        }
+    }
 
     /**
      * Function to write line to reaction.csv - fixing duplicate labels where possible
@@ -422,7 +457,7 @@ public class WikidataExport {
      * function to look for an alternative name for a PhysicalEntity
      *
      * @param name   existing name that has already been used
-     * @param rle     from ReactomeDB
+     * @param path   Pathway  from ReactomeDB
      *
      * @return string representing a new name or "" if none can be found
      */
@@ -539,7 +574,7 @@ public class WikidataExport {
             else {
                 writeEntry = false;
 //                System.err.println("Repeated entity name " + name);
-                log.warn("No unique label established for complex " + pe.getStId());
+                log.warn("No unique label established for complex/set " + pe.getStId());
             }
         }
         else {
