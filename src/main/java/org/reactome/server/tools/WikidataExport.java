@@ -64,6 +64,9 @@ public class WikidataExport {
     private static List<String> entityEntriesMade = new ArrayList<String>();
     private static List<String> modprotEntriesMade = new ArrayList<String>();
     private static List<String> modprotNamesUsed = new ArrayList<String>();
+    private static List<String> entriesNamesUsed = new ArrayList<String>();
+    private static List<String> rnNamesUsed = new ArrayList<String>();
+    private static List<String> entityNamesUsed = new ArrayList<String>();
 
     public static void main(String[] args) throws JSAPException {
 
@@ -314,6 +317,14 @@ public class WikidataExport {
     private static void outputPath(Pathway path) {
         WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(path, dbVersion);
         wdExtract.createWikidataEntry();
+        String name = wdExtract.getEntryName();
+        if (entriesNamesUsed.contains(name)) {
+            // do something
+            System.err.println("Repeated pathway name " + name);
+        }
+        else {
+            entriesNamesUsed.add(name);
+        }
         try {
             writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
         }
@@ -342,6 +353,14 @@ public class WikidataExport {
                 if (!entriesMade.contains(child.getStId())) {
                     WikiDataPathwayExtractor wdExtract = new WikiDataPathwayExtractor(child, dbVersion, path.getStId());
                     wdExtract.createWikidataEntry();
+                    String name = wdExtract.getEntryName();
+                    if (entriesNamesUsed.contains(name)) {
+                        // do something
+                        System.err.println("Repeated pathway name " + name);
+                    }
+                    else {
+                        entriesNamesUsed.add(name);
+                    }
                     try {
                         writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "P");
                     } catch (IOException e) {
@@ -355,6 +374,14 @@ public class WikidataExport {
                 if (!rnEntriesMade.contains(child.getStId())) {
                     WikiDataReactionExtractor wdExtract = new WikiDataReactionExtractor(child, dbVersion, path.getStId());
                     wdExtract.createWikidataEntry();
+                    String name = wdExtract.getEntryName();
+                    if (rnNamesUsed.contains(name)) {
+                        // do something
+                        System.err.println("Repeated reaction name " + name);
+                    }
+                    else {
+                        rnNamesUsed.add(name);
+                    }
                     try {
                         writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "R");
                     } catch (IOException e) {
@@ -409,31 +436,21 @@ public class WikidataExport {
      *
      * @param pe PhysicalEntity from ReactomDB
      *
-     * This function wites to entity_data.csv
+     * This function writes to entity_data.csv
      */
     private static void writeEntity(PhysicalEntity pe) {
         if (pe instanceof Complex) {
             if (!entityEntriesMade.contains(pe.getStId())) {
                 WikiDataComplexExtractor wdExtract = new WikiDataComplexExtractor((Complex) (pe), dbVersion);
                 wdExtract.createWikidataEntry();
-                try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
-                } catch (IOException e) {
-                    System.err.println("Caught IOException: " + e.getMessage());
-                }
-                writeChildEntity(wdExtract.getChildEntities());
+                writeEntityEntry(pe, wdExtract);
             }
         }
         else if (pe instanceof EntitySet) {
             if (!entityEntriesMade.contains(pe.getStId())) {
                 WikiDataSetExtractor wdExtract = new WikiDataSetExtractor((EntitySet) (pe), dbVersion);
                 wdExtract.createWikidataEntry();
-                try {
-                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
-                } catch (IOException e) {
-                    System.err.println("Caught IOException: " + e.getMessage());
-                }
-                writeChildEntity(wdExtract.getChildEntities());
+                writeEntityEntry(pe, wdExtract);
             }
         }
         else if (isModifiedProtein(pe)) {
@@ -464,6 +481,66 @@ public class WikidataExport {
     }
 
     /**
+     * Function to write line to entity.csv - fixing duplicate labels where possible
+     *
+     * @param pe         PhysicalEntity from ReactomeDB
+     * @param wdExtract  instance of the Extractor class being used
+     */
+    private static void writeEntityEntry(PhysicalEntity pe, ExtractorBase wdExtract) {
+        boolean writeEntry = true;
+        String name = wdExtract.getEntryName();
+        if (entityNamesUsed.contains(name)) {
+            String replacedname = adjustName(name, pe);
+            if (!replacedname.equals("")) {
+                wdExtract.replaceNameUsedInEntry(name, replacedname);
+                entityNamesUsed.add(replacedname);
+                name = replacedname;
+            }
+            else {
+                writeEntry = false;
+                System.err.println("Repeated entity name " + name);
+                log.warn("No unique label established for complex " + pe.getStId());
+            }
+        }
+        else {
+            entityNamesUsed.add(name);
+        }
+        if (writeEntry) {
+            try {
+                writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
+            } catch (IOException e) {
+                System.err.println("Caught IOException: " + e.getMessage());
+            }
+        }
+        writeChildEntity(wdExtract.getChildEntities());
+
+    }
+
+    /**
+     * function to look for an alternative name for a PhysicalEntity
+     *
+     * @param name   existing name that has already been used
+     * @param pe     PhysicalEntity from ReactomeDB
+     *
+     * @return string representing a new name or "" if none can be found
+     */
+    private static String adjustName(String name, PhysicalEntity pe) {
+        String replacedname = "";
+        boolean done = false;
+        if (pe.getName() != null) {
+            Integer n = 0;
+            while (!done && n < pe.getName().size()) {
+                if (!entityNamesUsed.contains(pe.getName().get(n))) {
+                    done = true;
+                    replacedname = pe.getName().get(n);
+                }
+                n++;
+            }
+        }
+        return replacedname;
+    }
+
+    /**
      * Function to determine if a PhysicalEntity is a ModifiedProtein
      *
      * @param pe PhysicalEntity from ReactomeDB
@@ -491,6 +568,90 @@ public class WikidataExport {
         }
     }
 
+
+//    private static void writeEntity(PhysicalEntity pe, String parent) {
+//        if (pe instanceof Complex) {
+//            if (!entityEntriesMade.contains(pe.getStId())) {
+//                WikiDataComplexExtractor wdExtract = new WikiDataComplexExtractor((Complex) (pe), dbVersion);
+//                wdExtract.createWikidataEntry();
+//                String name = wdExtract.getEntryName();
+//                String replacedname = name + "_" + parent;
+//                if (entityNamesUsed.contains(name)) {
+//                    replacedname = name + "_" + parent;
+//                    if (entriesNamesUsed.contains(replacedname)) {
+//                        System.err.println("Repeated entity name " + replacedname);
+//                        log.warn("No entry made for Physical Entity " + pe.getStId() + " as no unique name could be derived.");
+//                    }
+//                    else {
+//                        wdExtract.replaceNameUsedInEntry(name, replacedname);
+//                        entityNamesUsed.add(replacedname);
+//                    }
+//                }
+//                else {
+//                    entityNamesUsed.add(name);
+//                }
+//                try {
+//                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
+//                } catch (IOException e) {
+//                    System.err.println("Caught IOException: " + e.getMessage());
+//                }
+//                writeChildEntity(wdExtract.getChildEntities());
+//            }
+//        }
+//        else if (pe instanceof EntitySet) {
+//            if (!entityEntriesMade.contains(pe.getStId())) {
+//                WikiDataSetExtractor wdExtract = new WikiDataSetExtractor((EntitySet) (pe), dbVersion);
+//                wdExtract.createWikidataEntry();
+//                String name = wdExtract.getEntryName();
+//                String replacedname = name + "_" + parent;
+//                if (entityNamesUsed.contains(name)) {
+//                    replacedname = name + "_" + parent;
+//                    if (entriesNamesUsed.contains(replacedname)) {
+//                        System.err.println("Repeated entity name " + replacedname);
+//                        log.warn("No entry made for Physical Entity " + pe.getStId() + " as no unique name could be derived.");
+//                    }
+//                    else {
+//                        wdExtract.replaceNameUsedInEntry(name, replacedname);
+//                        entityNamesUsed.add(replacedname);
+//                    }
+//                }
+//                else {
+//                    entityNamesUsed.add(name);
+//                }
+//                try {
+//                    writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "E");
+//                } catch (IOException e) {
+//                    System.err.println("Caught IOException: " + e.getMessage());
+//                }
+//                writeChildEntity(wdExtract.getChildEntities(), replacedname);
+//            }
+//        }
+//        else if (isModifiedProtein(pe)) {
+//            if (!modprotEntriesMade.contains(pe.getStId())) {
+//                WikiDataModProteinExtractor wdExtract = new WikiDataModProteinExtractor((EntityWithAccessionedSequence) (pe), dbVersion);
+//                wdExtract.createWikidataEntry();
+//                String label = wdExtract.getLabelUsed();
+//                Integer count = 0;
+//                while (count < 3 && modprotNamesUsed.contains(label)) {
+//                    wdExtract.modifyLabel();
+//                    label = wdExtract.getLabelUsed();
+//                    count++;
+//                }
+//                if (count == 3 && modprotNamesUsed.contains(label)) {
+//                    log.warn("No unique label established for modified protein " + pe.getStId());
+//                }
+//                else {
+//                    modprotNamesUsed.add(label);
+//
+//                    try {
+//                        writeLine(wdExtract.getWikidataEntry(), wdExtract.getStableID(), "MP");
+//                    } catch (IOException e) {
+//                        log.error("Caught IOException: " + e.getMessage());
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     /**
      * Function to apply content filter to the pathways being added to the export file
