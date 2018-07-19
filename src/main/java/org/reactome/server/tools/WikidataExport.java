@@ -519,6 +519,11 @@ public class WikidataExport {
                 WikiDataComplexExtractor wdExtract = new WikiDataComplexExtractor((Complex) (pe), dbVersion);
                 wdExtract.createWikidataEntry();
                 writeEntityEntry(pe, wdExtract);
+                if (((Complex) pe).getHasComponent() != null) {
+                    for (PhysicalEntity member : ((Complex) pe).getHasComponent()) {
+                        writeEntity(member);
+                    }
+                }
             }
         }
         else if (pe instanceof EntitySet) {
@@ -526,6 +531,11 @@ public class WikidataExport {
                 WikiDataSetExtractor wdExtract = new WikiDataSetExtractor((EntitySet) (pe), dbVersion);
                 wdExtract.createWikidataEntry();
                 writeEntityEntry(pe, wdExtract);
+                if (((EntitySet) pe).getHasMember() != null) {
+                    for (PhysicalEntity member : ((EntitySet) pe).getHasMember()) {
+                        writeEntity(member);
+                    }
+                }
             }
         }
         else if (isModifiedProtein(pe)) {
