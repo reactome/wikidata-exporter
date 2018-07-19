@@ -121,6 +121,10 @@ class ExtractorBase {
 
     //////////////////////////////////////////////////////////////////////////////////
 
+    void replaceNameUsedInEntry(String original, String replacement) {
+        wdEntry = wdEntry.replace(original, replacement);
+    }
+
 
     /**
      * Function to adjust display name as appropriate
@@ -146,7 +150,6 @@ class ExtractorBase {
             }
             else {
                 // this would imply a repeat of an item that will caught elsewhere
-                // System.out.println("Issue with duplicate name " + name_nocommas);
                 return name_nocommas;
             }
         }
