@@ -169,12 +169,12 @@ class WikiDataModProteinExtractor extends ExtractorBase{
 //                        mod = mod + thismod;
 //                    }
                 }
-                if (mod.equals("")) {
-                    for (AbstractModifiedResidue m : mods) {
-                        System.out.println("mod with id " + thisObject.getStId());
-                    }
-
-                }
+//                if (mod.equals("")) {
+//                    for (AbstractModifiedResidue m : mods) {
+//                        System.out.println("mod with id " + thisObject.getStId());
+//                    }
+//
+//                }
             }
         }
         return mod;
