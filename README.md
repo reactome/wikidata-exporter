@@ -66,7 +66,7 @@ mvn clean package
 
 ```console
 mkdir outputdir
-java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -outdir outputdir
+java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -o outputdir
 ```
 
 This step may take up to 10 minutes.
