@@ -1,6 +1,7 @@
 package org.reactome.server.tools;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.martiansoftware.jsap.*;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.domain.result.SimpleDatabaseObject;
 import org.reactome.server.graph.service.DatabaseObjectService;
@@ -13,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-
 public class Export {
 
     private static Set<WDPathway> wdPathways;
@@ -21,13 +21,32 @@ public class Export {
     private static Set<WDPhysicalEntity> wdPhysicalEntities;
     private static Set<WDModifiedProtein> wdModifiedProteins;
 
-    public static void main(String[] args) {
+    private static String pathwayFile = "pathway.json";
+    private static String reactionFile = "reaction.json";
+    private static String physicalEntityFile = "physicalEntity.json";
+    private static String modifiedProteinFile = "modifiedProtein.json";
 
 
-        ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "Software1o1", GraphNeo4jConfig.class);
+    public static void main(String[] args) throws JSAPException {
+
+        SimpleJSAP jsap = new SimpleJSAP(Export.class.getName(), "A tool to export data for Wikidata",
+                new Parameter[]{
+                        new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.REQUIRED, 'h', "host", "The neo4j host"),
+                        new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.NOT_REQUIRED, 'b', "port", "The neo4j port"),
+                        new FlaggedOption("user", JSAP.STRING_PARSER, "neo4j", JSAP.REQUIRED, 'u', "user", "The neo4j user"),
+                        new FlaggedOption("password", JSAP.STRING_PARSER, "reactome", JSAP.REQUIRED, 'p', "password", "The neo4j password"),
+                        new FlaggedOption("outputdirectory", JSAP.STRING_PARSER, ".", JSAP.REQUIRED, 'o', "outputdirectory", "The output directory")
+                }
+        );
+
+        JSAPResult config = jsap.parse(args);
+        if (jsap.messagePrinted()) System.exit(1);
+
+        ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), GraphNeo4jConfig.class);
 
         DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
         SchemaService schemaService = ReactomeGraphCore.getService(SchemaService.class);
+
         // hard coded to homosapiens
         // we are presently only fetching Reactome entities for the homosapiens species
         long speciesId = 48887;
@@ -44,16 +63,9 @@ public class Export {
         wdPhysicalEntities = new LinkedHashSet<>();
         wdModifiedProteins = new LinkedHashSet<>();
 
-
         Collection<SimpleDatabaseObject> topLevelPathways = schemaService.getSimpleDatabaseObjectByClass(TopLevelPathway.class, species);
         Iterator<SimpleDatabaseObject> iterator = topLevelPathways.iterator();
         while (iterator.hasNext()) {
-            // todo: remove the commented stuff before commiting
-           // Pathway pathway = databaseObjectService.findByIdNoRelations("R-HSA-9615710"); // Late Endosomal Autophagy
-            //Pathway pathway = databaseObjectService.findByIdNoRelations("R-HSA-9612973"); // Autophagy Top level pathway
-            //Pathway pathway = databaseObjectService.findByIdNoRelations("R-HSA-1640170"); // Cell Cycle top level pathway
-            //Pathway pathway = databaseObjectService.findByIdNoRelations("R-HSA-1500931"); // Cell-Cell communication top level pathway
-            //Pathway pathway = databaseObjectService.findByIdNoRelations("R-HSA-8953897"); //  Cellular responses to external stimuli top level pathway
             Pathway pathway = databaseObjectService.findByIdNoRelations(iterator.next().getStId());
             traversePathway(pathway);
         }
@@ -64,11 +76,13 @@ public class Export {
         System.out.println(wdModifiedProteins.size());
 
         ObjectMapper objectMapper = new ObjectMapper();
+        String outputDirectory = config.getString("outputdirectory");
+
         try {
-            objectMapper.writeValue(new File("/Users/yhaider/dev/reactome/wikidata-exporter/outputdir", "pathway.json"), wdPathways);
-            objectMapper.writeValue(new File("/Users/yhaider/dev/reactome/wikidata-exporter/outputdir", "reaction.json"), wdReactions);
-            objectMapper.writeValue(new File("/Users/yhaider/dev/reactome/wikidata-exporter/outputdir", "physicalEntities.json"), wdPhysicalEntities);
-            objectMapper.writeValue(new File("/Users/yhaider/dev/reactome/wikidata-exporter/outputdir", "modifiedProteins.json"), wdModifiedProteins);
+            objectMapper.writeValue(new File(outputDirectory, pathwayFile), wdPathways);
+            objectMapper.writeValue(new File(outputDirectory, reactionFile), wdReactions);
+            objectMapper.writeValue(new File(outputDirectory, physicalEntityFile), wdPhysicalEntities);
+            objectMapper.writeValue(new File(outputDirectory, modifiedProteinFile), wdModifiedProteins);
 
         } catch (IOException e) {
             e.printStackTrace();
