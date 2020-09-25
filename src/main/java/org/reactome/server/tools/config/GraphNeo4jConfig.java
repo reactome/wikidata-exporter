@@ -45,5 +45,4 @@ public class GraphNeo4jConfig extends Neo4jConfig {
         }
         return sessionFactory;
     }
-
 }
