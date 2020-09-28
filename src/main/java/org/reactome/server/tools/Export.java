@@ -14,17 +14,24 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+
+/**
+ * @author Yusra Haider (yhaider@ebi.ac.uk)
+ **/
+
 public class Export {
 
     private static Set<WDPathway> wdPathways;
     private static Set<WDReaction> wdReactions;
     private static Set<WDPhysicalEntity> wdPhysicalEntities;
     private static Set<WDModifiedProtein> wdModifiedProteins;
+    private static Map<String, Set> wdParents;
 
     private static String pathwayFile = "pathway.json";
     private static String reactionFile = "reaction.json";
     private static String physicalEntityFile = "physicalEntity.json";
     private static String modifiedProteinFile = "modifiedProtein.json";
+    private static String parentFile = "parent.json";
 
 
     public static void main(String[] args) throws JSAPException {
@@ -62,6 +69,7 @@ public class Export {
         wdReactions = new LinkedHashSet<>();
         wdPhysicalEntities = new LinkedHashSet<>();
         wdModifiedProteins = new LinkedHashSet<>();
+        wdParents = new HashMap<>();
 
         Collection<SimpleDatabaseObject> topLevelPathways = schemaService.getSimpleDatabaseObjectByClass(TopLevelPathway.class, species);
         Iterator<SimpleDatabaseObject> iterator = topLevelPathways.iterator();
@@ -74,6 +82,7 @@ public class Export {
         System.out.println(wdReactions.size());
         System.out.println(wdPhysicalEntities.size());
         System.out.println(wdModifiedProteins.size());
+        System.out.println(wdParents.size());
 
         ObjectMapper objectMapper = new ObjectMapper();
         String outputDirectory = config.getString("outputdirectory");
@@ -102,6 +111,7 @@ public class Export {
             for (Event event : loe) {
                 // adding and traversing the parts of a pathway
                 parts.add(new WDLinks(event, null));
+                add_parent_child_link(event.getStId(), parent.getStId());
                 if (event instanceof Pathway) {
                     Pathway child = (Pathway) (event);
                     traversePathway(child);
@@ -127,7 +137,11 @@ public class Export {
         if (loe != null && loe.size() > 0) {
             input = new ArrayList<>();
             for (StoichiometryObject so : reaction.fetchInput()) {
-                input.add(new WDLinks((PhysicalEntity)so.getObject(), so.getStoichiometry()));
+                WDLinks link = new WDLinks(so.getObject(), so.getStoichiometry());
+                input.add(link);
+                if (link.getIdType() == "REACTOME") {
+                    add_parent_child_link(link.getId(), reaction.getStId());
+                }
                 traverseEntity((PhysicalEntity) so.getObject());
             }
         }
@@ -138,7 +152,11 @@ public class Export {
             for (PhysicalEntity pe: loe) {
                 output = new ArrayList<>();
                 for (StoichiometryObject so : reaction.fetchOutput()) {
-                    output.add(new WDLinks((PhysicalEntity) so.getObject(), so.getStoichiometry()));
+                    WDLinks link= new WDLinks(so.getObject(), so.getStoichiometry());
+                    output.add(link);
+                    if (link.getIdType() == "REACTOME") {
+                        add_parent_child_link(link.getId(), reaction.getStId());
+                    }
                     traverseEntity((PhysicalEntity) so.getObject());
                 }
                 traverseEntity(pe);
@@ -149,7 +167,11 @@ public class Export {
         if (reaction.getCatalystActivity() != null){
             for (CatalystActivity catalystActivity: reaction.getCatalystActivity() ){
                 //TODO figure out / ask about stoichiometry here
-                modifier.add(new WDLinks(catalystActivity.getPhysicalEntity(), 1));
+                WDLinks link = new WDLinks(catalystActivity.getPhysicalEntity(), 1);
+                modifier.add(link);
+                if (link.getIdType() == "REACTOME") {
+                    add_parent_child_link(link.getId(), reaction.getStId());
+                }
                 traverseEntity(catalystActivity.getPhysicalEntity());
             }
         }
@@ -159,7 +181,11 @@ public class Export {
                 DatabaseObject pe = reg.getRegulator();
                 if (pe instanceof PhysicalEntity) {
                     //TODO figure out / ask about stoichiometry here
-                    modifier.add(new WDLinks((PhysicalEntity)(pe), 1));
+                    WDLinks link = new WDLinks(pe, 1);
+                    modifier.add(link);
+                    if (link.getIdType() == "REACTOME") {
+                        add_parent_child_link(link.getId(), reaction.getStId());
+                    }
                     traverseEntity((PhysicalEntity)(pe));
                 }
             }
@@ -182,8 +208,12 @@ public class Export {
             if (complex.getHasComponent() != null) {
                 parts = new ArrayList<>();
                 for (StoichiometryObject stoichiometryObject : complex.fetchHasComponent()) {
-                    parts.add(new WDLinks((PhysicalEntity) stoichiometryObject.getObject(), stoichiometryObject.getStoichiometry()));
-                    traverseEntity((PhysicalEntity) stoichiometryObject.getObject());
+                    WDLinks link = new WDLinks((PhysicalEntity) stoichiometryObject.getObject(), stoichiometryObject.getStoichiometry());
+                    parts.add(link);
+                    if (link.getIdType() == "REACTOME") {
+                        add_parent_child_link(link.getId(), physicalEntity.getStId());
+                    }
+                    traverseEntity(stoichiometryObject.getObject());
                 }
             }
 
@@ -198,8 +228,8 @@ public class Export {
 
             if (entitySet.getHasMember() != null) {
                 parts = new ArrayList<>();
-//                 todo check for missing data here
-//                 todo for example, we aren't adding the candidates of candidate sets here
+                // todo check for missing data here
+                // todo for example, we aren't adding the candidates of candidate sets here
                 for (PhysicalEntity member : entitySet.getHasMember()) {
                     WDLinks link = new WDLinks(member, 1);
                     int linkIndex = parts.indexOf(link);
@@ -210,6 +240,9 @@ public class Export {
                     else {
                         parts.add(link);
                     }
+                    if (link.getIdType() == "REACTOME") {
+                        add_parent_child_link(link.getId(), physicalEntity.getStId());
+                    }
                     traverseEntity(member);
                 }
             }
@@ -218,6 +251,7 @@ public class Export {
             wdEntitySet.setParts(parts);
             wdPhysicalEntities.add(wdEntitySet);
         }
+
         else if (isModifiedProtein(physicalEntity)) {
             WDModifiedProtein wdModifiedProtein = new WDModifiedProtein((EntityWithAccessionedSequence)(physicalEntity));
             wdModifiedProteins.add(wdModifiedProtein);
@@ -234,4 +268,15 @@ public class Export {
         return false;
     }
 
+    private static void add_parent_child_link(String key, String val) {
+        if (wdParents.containsKey(key)) {
+            Set set = wdParents.get(key);
+            set.add(val);
+        }
+        else {
+            Set set = new HashSet();
+            set.add(val);
+            wdParents.put(key, set);
+        }
+    }
 }
