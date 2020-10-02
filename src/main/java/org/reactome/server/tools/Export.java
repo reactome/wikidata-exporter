@@ -92,6 +92,7 @@ public class Export {
             objectMapper.writeValue(new File(outputDirectory, reactionFile), wdReactions);
             objectMapper.writeValue(new File(outputDirectory, physicalEntityFile), wdPhysicalEntities);
             objectMapper.writeValue(new File(outputDirectory, modifiedProteinFile), wdModifiedProteins);
+            objectMapper.writeValue(new File(outputDirectory, parentFile), wdParents);
 
         } catch (IOException e) {
             e.printStackTrace();
