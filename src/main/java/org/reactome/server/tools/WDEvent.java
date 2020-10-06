@@ -14,11 +14,11 @@ public class WDEvent extends WDReactome {
         super(event.getStId(), event.getDisplayName(), event.getSpeciesName());
 
         if (event instanceof Pathway) {
-            super.setDescription("An instance of the biological pathway " + super.getName() +  " in " + super.getSpecies() + " (" + super.getId() + ")"); //TODO: figure this out?
+            super.setDescription("An instance of the biological pathway in " + super.getSpecies() + " with Reactome ID (" + super.getId() + ")");
             super.setType("PATHWAY");
         }
         else if (event instanceof ReactionLikeEvent){
-            super.setDescription("An instance of the biological reaction " + super.getName() + " in " + super.getSpecies() + " (" + super.getId() + ")"); //TODO: figure this out?
+            super.setDescription("An instance of the biological reaction in " + super.getSpecies() + " with Reactome ID (" + super.getId() + ")");
             super.setType("REACTION");
         }
         this.goterm = populateGoTerm(event.getGoBiologicalProcess());

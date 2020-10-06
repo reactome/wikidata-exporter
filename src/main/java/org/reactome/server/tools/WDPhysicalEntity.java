@@ -16,15 +16,15 @@ public class WDPhysicalEntity extends WDReactome {
 
         if (physicalEntity instanceof Complex) {
             super.setType("COMP");
-            super.setDescription("An instance of macromolecular complex " + super.getName() +  " in " + super.getSpecies() + " (" + super.getId() + ")");
+            super.setDescription("An instance of macromolecular complex in " + super.getSpecies() + " with Reactome ID (" + super.getId() + ")");
         }
         else if (physicalEntity instanceof DefinedSet) {
             super.setType("DS");
-            super.setDescription("An instance of defined set " + super.getName() +  " in " + super.getSpecies() + " (" + super.getId() + ")");
+            super.setDescription("An instance of defined set in " + super.getSpecies() + " with Reactome ID (" + super.getId() + ")");
         }
         else if(physicalEntity instanceof CandidateSet) {
             super.setType("CS");
-            super.setDescription("An instance of candidate set " + super.getName() +  " in " + super.getSpecies() + " (" + super.getId() + ")");
+            super.setDescription("An instance of candidate set in " + super.getSpecies() + " with Reactome ID (" + super.getId() + ")");
         }
     }
 

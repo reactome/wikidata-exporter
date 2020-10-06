@@ -16,7 +16,7 @@ public class WDModifiedProtein extends WDReactome {
         super.setType("EWASMOD");
         this.uniprotID = populateUniprotID(ewas);
         this.modifiedResidues = populateModifiedResidues(ewas);
-        super.setDescription("An instance of entity with accessioned sequence " + super.getName() +  " in " + super.getSpecies() + " (" + super.getId() + ")");
+        super.setDescription("An instance of entity with accessioned sequence in " + super.getSpecies() + " with Reactome ID (" + super.getId() + ")");
     }
 
     public String getUniprotID() {

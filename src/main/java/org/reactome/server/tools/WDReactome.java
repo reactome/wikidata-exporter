@@ -1,6 +1,8 @@
 package org.reactome.server.tools;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -22,7 +24,7 @@ public class WDReactome implements Serializable {
 
     public WDReactome(String id, String name, String species) {
         this.id = id;
-        this.name = name;
+        this.name = StringUtils.abbreviate(name, 240);
         this.species = species;
     }
 
