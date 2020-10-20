@@ -33,6 +33,29 @@ Five json files are written:
 
 These files are read in by the sister code r-wikidata-bot and used to populate/update Reactome data in Wikidata.
 
+### Current Functionality and Limitations
+- The code currently only exports top level pathways (and their children) belonging to the Homo sapiens species
+
+- The code exports Pathway, ReactionLikeEvent, Complex & EntitySet and modified proteins (EntityWithAccessionedSequence 
+that have modified residues) as Reactome entities in the files pathway.json, reaction.json, physicalEntity.json and modifiedProtein.json 
+respectively.
+
+- The above entities may have children / parts that are not exported as Reactome entities. So for example, 
+a Complex could have a SimpleEntity as a component, an EntitySet could have an EntityWithAccessionedSequence
+without modified residues, or a Drug as a member. Modified proteins have modified residues that don’t belong
+to Reactome database. Currently, the code for the project can handle and link to such parts / children where 
+the external database is UniProt or ChEBI, provided that part from a non-Reactome source already exists in Wikidata. 
+This then includes SimpleEntity and EntityWithAccessionedSequence without modified residues where the ChEBI and UniProt
+identifiers are specified
+
+- The fifth file parent.json record child-parent links allowing each Reactome entry in Wikidata to both be linked to
+its children and parents
+
+- The code doesn't currently support export of Drug, Polymer, and OtherEntity
+
+- The code exports `components` as parts of complexes, `members` as parts of the entity set
+  and modified residues falling under `TranslationalModification` and `ReplacedResidue` as parts of modified proteins. 
+  `candidates` for CandidateSet, and other types of modified residues are not being exported
 
 ### Prerequisites
 

@@ -106,7 +106,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.reactome.server.tools.WikidataExport</mainClass>
+                            <mainClass>org.reactome.server.tools.Export</mainClass>
                         </manifest>
                     </archive>
                     <finalName>wikidata-exporter</finalName>
