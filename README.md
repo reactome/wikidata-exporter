@@ -48,8 +48,8 @@ the external database is UniProt or ChEBI, provided that part from a non-Reactom
 This then includes SimpleEntity and EntityWithAccessionedSequence without modified residues where the ChEBI and UniProt
 identifiers are specified
 
-- The fifth file parent.json record child-parent links allowing each Reactome entry in Wikidata to both be linked to
-its children and parents
+- The fifth file parent.json records child-parent links allowing each Reactome entry in Wikidata to be linked back to its
+parents
 
 - The code doesn't currently support export of Drug, Polymer, and OtherEntity
 
