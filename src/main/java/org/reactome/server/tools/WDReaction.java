@@ -1,10 +1,12 @@
 package org.reactome.server.tools;
 
-import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.graph.service.helper.StoichiometryObject;
+import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 
-import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * @author Yusra Haider (yhaider@ebi.ac.uk)
+ **/
 
 public class WDReaction extends WDEvent {
 
@@ -17,16 +19,28 @@ public class WDReaction extends WDEvent {
     }
 
 
-    public void setInput(List<WDLinks> input) { this.input = input; }
+    public void setInput(List<WDLinks> input) {
+        this.input = input;
+    }
 
-    public void setOutput(List<WDLinks> output) { this.output = output; }
+    public void setOutput(List<WDLinks> output) {
+        this.output = output;
+    }
 
-    public void setModifier(List<WDLinks> modifier) { this.modifier = modifier; }
+    public void setModifier(List<WDLinks> modifier) {
+        this.modifier = modifier;
+    }
 
-    public List<WDLinks> getInput() { return input; }
+    public List<WDLinks> getInput() {
+        return input;
+    }
 
-    public List<WDLinks> getOutput() { return output; }
+    public List<WDLinks> getOutput() {
+        return output;
+    }
 
-    public List<WDLinks> getModifier() { return modifier; }
+    public List<WDLinks> getModifier() {
+        return modifier;
+    }
 
 }

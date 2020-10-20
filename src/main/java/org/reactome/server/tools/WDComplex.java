@@ -2,11 +2,12 @@ package org.reactome.server.tools;
 
 import org.reactome.server.graph.domain.model.Complex;
 import org.reactome.server.graph.domain.model.DatabaseIdentifier;
-import org.reactome.server.graph.domain.model.PhysicalEntity;
-import org.reactome.server.graph.service.helper.StoichiometryObject;
 
-import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * @author Yusra Haider (yhaider@ebi.ac.uk)
+ **/
 
 public class WDComplex extends WDPhysicalEntity {
 
@@ -14,7 +15,6 @@ public class WDComplex extends WDPhysicalEntity {
 
     public WDComplex(Complex complex) {
         super(complex);
-        // TODO: we needa define this in a constants file
         super.setType("COMP");
         this.complexPortalRef = populateComplexPortalRef(complex);
     }
@@ -22,7 +22,7 @@ public class WDComplex extends WDPhysicalEntity {
     private String populateComplexPortalRef(Complex complex) {
         List<DatabaseIdentifier> xrefs = complex.getCrossReference();
         if (xrefs != null) {
-            for (DatabaseIdentifier db: xrefs) {
+            for (DatabaseIdentifier db : xrefs) {
                 if (db.getDatabaseName().equals("ComplexPortal")) {
                     return db.getIdentifier();
                 }
@@ -31,5 +31,7 @@ public class WDComplex extends WDPhysicalEntity {
         return null;
     }
 
-    public String getComplexPortalRef() { return complexPortalRef; }
+    public String getComplexPortalRef() {
+        return complexPortalRef;
+    }
 }

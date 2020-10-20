@@ -1,9 +1,12 @@
-//TODO: set jackson to ignore null fields
-
 package org.reactome.server.tools;
-import org.reactome.server.graph.domain.model.*;
+
+import org.reactome.server.graph.domain.model.Pathway;
 
 import java.util.List;
+
+/**
+ * @author Yusra Haider (yhaider@ebi.ac.uk)
+ **/
 
 public class WDPathway extends WDEvent {
 
@@ -13,8 +16,12 @@ public class WDPathway extends WDEvent {
         super(pathway);
     }
 
-    public List<WDLinks> getParts() { return parts; }
+    public List<WDLinks> getParts() {
+        return parts;
+    }
 
-    public void setParts(List<WDLinks> parts) { this.parts = parts; }
+    public void setParts(List<WDLinks> parts) {
+        this.parts = parts;
+    }
 
 }

@@ -1,10 +1,10 @@
 package org.reactome.server.tools;
 
-import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.graph.service.helper.StoichiometryObject;
+import org.reactome.server.graph.domain.model.EntitySet;
 
-import java.util.ArrayList;
-import java.util.List;
+/**
+ * @author Yusra Haider (yhaider@ebi.ac.uk)
+ **/
 
 public class WDEntitySet extends WDPhysicalEntity {
 

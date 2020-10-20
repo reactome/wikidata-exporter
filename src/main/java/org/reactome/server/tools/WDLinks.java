@@ -1,15 +1,23 @@
 package org.reactome.server.tools;
 
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Yusra Haider (yhaider@ebi.ac.uk)
+ **/
+
+// this class represents the children / parts for the different entities in Reactome
 public class WDLinks implements Serializable {
-    private String id;
-    private String idType;
-    private Integer qty;
+    static Logger log = Logger.getLogger(WDLinks.class);
+
+    private String id; // the id of the child / part
+    private String idType; // does the child / part belong to Reactome or is it from an external database?
+    private Integer qty; // the quantity of the child, for that parent
 
     public WDLinks(DatabaseObject databaseObject, Integer qty) {
         this.qty = qty;
@@ -18,26 +26,21 @@ public class WDLinks implements Serializable {
             this.id = databaseObject.getStId();
             this.idType = "REACTOME";
 
-        }
-
-        else if (databaseObject instanceof SimpleEntity) {
-            ReferenceMolecule ref = ((SimpleEntity)databaseObject).getReferenceEntity();
+        } else if (databaseObject instanceof SimpleEntity) {
+            ReferenceMolecule ref = ((SimpleEntity) databaseObject).getReferenceEntity();
             if (ref != null) {
                 this.id = ref.getIdentifier();
                 this.idType = ref.getDatabaseName();
             }
-        }
-
-        else if (databaseObject instanceof EntityWithAccessionedSequence) {
+        } else if (databaseObject instanceof EntityWithAccessionedSequence) {
             List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) databaseObject).getHasModifiedResidue();
             if (mods != null && mods.size() > 0) {
                 this.idType = "REACTOME";
                 this.id = databaseObject.getStId();
-            }
-            else {
+            } else {
                 ReferenceSequence ref = ((EntityWithAccessionedSequence) databaseObject).getReferenceEntity();
                 if (ref != null) {
-                    this.idType  = ref.getDatabaseName();
+                    this.idType = ref.getDatabaseName();
                     this.id = ref.getIdentifier();
                 }
             }
@@ -47,28 +50,41 @@ public class WDLinks implements Serializable {
         else {
             this.id = databaseObject.getStId();
             this.idType = "UNKNOWN";
+            log.warn(this.id + " being exported as UNKNOWN type link");
         }
 
     }
 
     // to deal with residues for modified proteins
-    public WDLinks(String id, String idType, Integer qty ) {
+    public WDLinks(String id, String idType, Integer qty) {
         this.id = id;
         this.idType = idType;
         this.qty = qty;
     }
 
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
-    public void setId(String id) { this.id = id; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getIdType() { return idType; }
+    public String getIdType() {
+        return idType;
+    }
 
-    public void setIdType(String idType) { this.idType = idType; }
+    public void setIdType(String idType) {
+        this.idType = idType;
+    }
 
-    public Integer getQty() { return qty; }
+    public Integer getQty() {
+        return qty;
+    }
 
-    public void setQty(Integer qty) { this.qty = qty; }
+    public void setQty(Integer qty) {
+        this.qty = qty;
+    }
 
     @Override
     public int hashCode() {

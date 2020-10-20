@@ -1,18 +1,24 @@
 package org.reactome.server.tools;
 
+import org.apache.log4j.Logger;
 import org.reactome.server.graph.domain.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Yusra Haider (yhaider@ebi.ac.uk)
+ **/
+
 public class WDModifiedProtein extends WDReactome {
+
+    static Logger log = Logger.getLogger(WDModifiedProtein.class);
 
     private String uniprotID;
     private List<WDLinks> modifiedResidues;
 
     public WDModifiedProtein(EntityWithAccessionedSequence ewas) {
         super(ewas.getStId(), ewas.getDisplayName(), ewas.getSpeciesName());
-        //TODO shift to constants file
         super.setType("EWASMOD");
         this.uniprotID = populateUniprotID(ewas);
         this.modifiedResidues = populateModifiedResidues(ewas);
@@ -37,7 +43,7 @@ public class WDModifiedProtein extends WDReactome {
 
     public String populateUniprotID(EntityWithAccessionedSequence ewas) {
         ReferenceSequence ref = ewas.getReferenceEntity();
-        if (ref == null)  return null;
+        if (ref == null) return null;
         return ref.getIdentifier();
 
     }
@@ -63,7 +69,7 @@ public class WDModifiedProtein extends WDReactome {
                         residues.add(new WDLinks(psiMod.getDatabaseName() + ":" + psiMod.getIdentifier(), psiMod.getDatabaseName(), coordinate));
                     }
                 }
-                //TODO take care of other types of modifications
+                log.warn("modified residue not being exported: " + m.getStId() + " , " + m.getDisplayName());
             }
         }
         return residues;
