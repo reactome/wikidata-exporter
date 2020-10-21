@@ -4,7 +4,7 @@
 
 This is the sister code of the [r-wikidata-bot](https://github.com/reactome/r-wikidata-bot) and creates the required json files from the Reactome Graph Database.
 
-## Code
+### Code
 
 The code is written in Java and uses the [Graph Database](http://www.reactome.org/pages/documentation/developer-guide/graph-database/) and corresponding API. 
 
@@ -63,28 +63,30 @@ parents
 the wikidata-exporter
 
 
-#### Export data from Reactome
+### Exporting data from Reactome
 
 1. Cloning and packaging the wikidata-exporter project
 
-```
-git clone https://github.com/reactome/wikidata-exporter.git
-cd wikidata-exporter
-mvn clean package
-```
-
+    ```console
+    git clone https://github.com/reactome/wikidata-exporter.git
+    cd wikidata-exporter
+    mvn clean package
+    ```
+   
 2. Generating .json files
 
-```
-mkdir data
-java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -o data
-```
-
-This step may take up to 10 minutes.
-
+    ```console
+    mkdir data
+    java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -o data
+    ```
+    This step may take up to 10 minutes.
+    
 3. Verification
 
-The specified outputdirectory should have the 5 json files mentioned above.
+    The specified outputdirectory should have the 5 json files mentioned above.
 
-The wikidata-exporter/WikidataExporter.log file has the logs for the project. 
- 
+    The wikidata-exporter/WikidataExporter.log file has the logs for the project. 
+
+
+
+
