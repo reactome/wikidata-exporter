@@ -9,9 +9,10 @@ import java.util.Objects;
 
 /**
  * @author Yusra Haider (yhaider@ebi.ac.uk)
+ * This class represents the children / parts for the different entities in Reactome
  **/
 
-// this class represents the children / parts for the different entities in Reactome
+
 public class WDLinks implements Serializable {
     static Logger log = Logger.getLogger(WDLinks.class);
 

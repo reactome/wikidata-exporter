@@ -116,7 +116,7 @@ public class Export {
             for (Event event : loe) {
                 // adding and traversing the parts of a pathway
                 parts.add(new WDLinks(event, null));
-                add_parent_child_link(event.getStId(), parent.getStId());
+                addParentChildLink(event.getStId(), parent.getStId());
                 if (event instanceof Pathway) {
                     Pathway child = (Pathway) (event);
                     traversePathway(child);
@@ -148,7 +148,7 @@ public class Export {
                 input.add(link);
                 // if child is from Reactome, create child-parent link
                 if (link.getIdType() == "REACTOME") {
-                    add_parent_child_link(link.getId(), reaction.getStId());
+                    addParentChildLink(link.getId(), reaction.getStId());
                 }
                 traverseEntity((PhysicalEntity) so.getObject());
             }
@@ -166,7 +166,7 @@ public class Export {
                     output.add(link);
                     // if child is from Reactome, create child-parent link
                     if (link.getIdType() == "REACTOME") {
-                        add_parent_child_link(link.getId(), reaction.getStId());
+                        addParentChildLink(link.getId(), reaction.getStId());
                     }
                     traverseEntity((PhysicalEntity) so.getObject());
                 }
@@ -186,7 +186,7 @@ public class Export {
                 modifier.add(link);
                 // if child is from Reactome, create child-parent link
                 if (link.getIdType() == "REACTOME") {
-                    add_parent_child_link(link.getId(), reaction.getStId());
+                    addParentChildLink(link.getId(), reaction.getStId());
                 }
                 traverseEntity(catalystActivity.getPhysicalEntity());
             }
@@ -201,7 +201,7 @@ public class Export {
                     modifier.add(link);
                     // if child is from Reactome, create child-parent link
                     if (link.getIdType() == "REACTOME") {
-                        add_parent_child_link(link.getId(), reaction.getStId());
+                        addParentChildLink(link.getId(), reaction.getStId());
                     }
                     traverseEntity((PhysicalEntity) (pe));
                 }
@@ -230,7 +230,7 @@ public class Export {
                     parts.add(link);
                     // if child is from Reactome, create child-parent link
                     if (link.getIdType() == "REACTOME") {
-                        add_parent_child_link(link.getId(), physicalEntity.getStId());
+                        addParentChildLink(link.getId(), physicalEntity.getStId());
                     }
                     traverseEntity(stoichiometryObject.getObject());
                 }
@@ -257,7 +257,7 @@ public class Export {
                         parts.add(link);
                     }
                     if (link.getIdType() == "REACTOME") {
-                        add_parent_child_link(link.getId(), physicalEntity.getStId());
+                        addParentChildLink(link.getId(), physicalEntity.getStId());
                     }
                     traverseEntity(member);
                 }
@@ -282,7 +282,7 @@ public class Export {
         return false;
     }
 
-    private static void add_parent_child_link(String key, String val) {
+    private static void addParentChildLink(String key, String val) {
         if (wdParents.containsKey(key)) {
             Set set = wdParents.get(key);
             set.add(val);
