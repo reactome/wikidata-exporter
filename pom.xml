@@ -23,9 +23,9 @@
 
     <developers>
         <developer>
-            <id>skeating</id>
-            <name>Sarah Keating</name>
-            <email>skeating@ebi.ac.uk</email>
+            <id>yhaider</id>
+            <name>Yusra Haider</name>
+            <email>yhaiderebi.ac.uk</email>
             <organization>http://www.ebi.ac.uk/</organization>
         </developer>
     </developers>
@@ -102,7 +102,7 @@
             <!-- Generate jar with dependencies -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.0.0</version>
                 <configuration>
                     <archive>
                         <manifest>
