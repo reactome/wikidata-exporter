@@ -41,14 +41,14 @@ public class WDModifiedProtein extends WDReactome {
         this.modifiedResidues = modifiedResidues;
     }
 
-    public String populateUniprotID(EntityWithAccessionedSequence ewas) {
+    private String populateUniprotID(EntityWithAccessionedSequence ewas) {
         ReferenceSequence ref = ewas.getReferenceEntity();
         if (ref == null) return null;
         return ref.getIdentifier();
 
     }
 
-    public List<WDLinks> populateModifiedResidues(EntityWithAccessionedSequence ewas) {
+    private List<WDLinks> populateModifiedResidues(EntityWithAccessionedSequence ewas) {
 
         List<WDLinks> residues = null;
         List<AbstractModifiedResidue> mods = ewas.getHasModifiedResidue();
