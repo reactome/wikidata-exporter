@@ -28,13 +28,7 @@ public class Export {
     private static Set<WDReaction> wdReactions;
     private static Set<WDPhysicalEntity> wdPhysicalEntities;
     private static Set<WDModifiedProtein> wdModifiedProteins;
-    private static Map<String, Set> wdParents;
-
-    private static String pathwayFile = "pathway.json";
-    private static String reactionFile = "reaction.json";
-    private static String physicalEntityFile = "physicalEntity.json";
-    private static String modifiedProteinFile = "modifiedProtein.json";
-    private static String parentFile = "parent.json";
+    private static Map<String, Set<String>> wdParents;
 
 
     public static void main(String[] args) throws JSAPException {
@@ -76,9 +70,8 @@ public class Export {
         wdParents = new HashMap<>();
 
         Collection<SimpleDatabaseObject> topLevelPathways = schemaService.getSimpleDatabaseObjectByClass(TopLevelPathway.class, species);
-        Iterator<SimpleDatabaseObject> iterator = topLevelPathways.iterator();
-        while (iterator.hasNext()) {
-            Pathway pathway = databaseObjectService.findByIdNoRelations(iterator.next().getStId());
+        for (SimpleDatabaseObject topLevelPathway : topLevelPathways) {
+            Pathway pathway = databaseObjectService.findByIdNoRelations(topLevelPathway.getStId());
             traversePathway(pathway);
         }
 
@@ -90,6 +83,12 @@ public class Export {
 
         ObjectMapper objectMapper = new ObjectMapper();
         String outputDirectory = config.getString("outputdirectory");
+
+        String pathwayFile = "pathway.json";
+        String reactionFile = "reaction.json";
+        String physicalEntityFile = "physicalEntity.json";
+        String modifiedProteinFile = "modifiedProtein.json";
+        String parentFile = "parent.json";
 
         try {
             objectMapper.writeValue(new File(outputDirectory, pathwayFile), wdPathways);
@@ -147,10 +146,10 @@ public class Export {
                 WDLinks link = new WDLinks(so.getObject(), so.getStoichiometry());
                 input.add(link);
                 // if child is from Reactome, create child-parent link
-                if (link.getIdType() == "REACTOME") {
+                if (link.getIdType().equals("REACTOME")) {
                     addParentChildLink(link.getId(), reaction.getStId());
                 }
-                traverseEntity((PhysicalEntity) so.getObject());
+                traverseEntity(so.getObject());
             }
         }
 
@@ -165,10 +164,10 @@ public class Export {
                     WDLinks link = new WDLinks(so.getObject(), so.getStoichiometry());
                     output.add(link);
                     // if child is from Reactome, create child-parent link
-                    if (link.getIdType() == "REACTOME") {
+                    if (link.getIdType().equals("REACTOME")) {
                         addParentChildLink(link.getId(), reaction.getStId());
                     }
-                    traverseEntity((PhysicalEntity) so.getObject());
+                    traverseEntity(so.getObject());
                 }
                 traverseEntity(pe);
             }
@@ -185,7 +184,7 @@ public class Export {
                 WDLinks link = new WDLinks(catalystActivity.getPhysicalEntity(), 1);
                 modifier.add(link);
                 // if child is from Reactome, create child-parent link
-                if (link.getIdType() == "REACTOME") {
+                if (link.getIdType().equals("REACTOME")) {
                     addParentChildLink(link.getId(), reaction.getStId());
                 }
                 traverseEntity(catalystActivity.getPhysicalEntity());
@@ -194,16 +193,16 @@ public class Export {
 
         if (reaction.getRegulatedBy() != null) {
             for (Regulation reg : reaction.getRegulatedBy()) {
-                DatabaseObject pe = reg.getRegulator();
-                if (pe instanceof PhysicalEntity) {
+                PhysicalEntity pe = reg.getRegulator();
+                if (pe != null) {
                     //TODO figure out / ask about stoichiometry here. Should the stoichiometry be 1?
                     WDLinks link = new WDLinks(pe, 1);
                     modifier.add(link);
                     // if child is from Reactome, create child-parent link
-                    if (link.getIdType() == "REACTOME") {
+                    if (link.getIdType().equals("REACTOME")) {
                         addParentChildLink(link.getId(), reaction.getStId());
                     }
-                    traverseEntity((PhysicalEntity) (pe));
+                    traverseEntity(pe);
                 }
             }
         }
@@ -226,10 +225,10 @@ public class Export {
             if (complex.getHasComponent() != null) {
                 parts = new ArrayList<>();
                 for (StoichiometryObject stoichiometryObject : complex.fetchHasComponent()) {
-                    WDLinks link = new WDLinks((PhysicalEntity) stoichiometryObject.getObject(), stoichiometryObject.getStoichiometry());
+                    WDLinks link = new WDLinks(stoichiometryObject.getObject(), stoichiometryObject.getStoichiometry());
                     parts.add(link);
                     // if child is from Reactome, create child-parent link
-                    if (link.getIdType() == "REACTOME") {
+                    if (link.getIdType().equals("REACTOME")) {
                         addParentChildLink(link.getId(), physicalEntity.getStId());
                     }
                     traverseEntity(stoichiometryObject.getObject());
@@ -240,6 +239,7 @@ public class Export {
             wdPhysicalEntities.add(wdComplex);
         } else if (physicalEntity instanceof EntitySet) {
             EntitySet entitySet = (EntitySet) (physicalEntity);
+
             WDEntitySet wdEntitySet = new WDEntitySet(entitySet);
             List<WDLinks> parts = null;
 
@@ -256,7 +256,7 @@ public class Export {
                     } else {
                         parts.add(link);
                     }
-                    if (link.getIdType() == "REACTOME") {
+                    if (link.getIdType().equals("REACTOME")) {
                         addParentChildLink(link.getId(), physicalEntity.getStId());
                     }
                     traverseEntity(member);
@@ -275,19 +275,17 @@ public class Export {
     private static boolean isModifiedProtein(PhysicalEntity physicalEntity) {
         if (physicalEntity instanceof EntityWithAccessionedSequence) {
             List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) physicalEntity).getHasModifiedResidue();
-            if (mods != null && mods.size() > 0) {
-                return true;
-            }
+            return mods != null && mods.size() > 0;
         }
         return false;
     }
 
     private static void addParentChildLink(String key, String val) {
         if (wdParents.containsKey(key)) {
-            Set set = wdParents.get(key);
+            Set<String> set = wdParents.get(key);
             set.add(val);
         } else {
-            Set set = new HashSet();
+            HashSet<String> set = new HashSet();
             set.add(val);
             wdParents.put(key, set);
         }

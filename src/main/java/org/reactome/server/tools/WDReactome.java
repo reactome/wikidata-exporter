@@ -18,15 +18,6 @@ public class WDReactome implements Serializable {
     private String type;
     private String description;
 
-    public WDReactome() {
-    }
-
-    public WDReactome(String id, String name, String description, String species, String type) {
-        this(id, name, species);
-        this.description = description;
-        this.type = type;
-    }
-
     public WDReactome(String id, String name, String species) {
         this.id = id;
         // StringUtils.abbreviate was added because there is a limit of 250 characters
