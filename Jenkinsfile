@@ -1,7 +1,7 @@
 // This Jenkinsfile is used by Jenkins to run the Wikidata step of Reactome's release.
 // It requires that the ConfirmReleaseConfigs step has been run successfully before it can be run.
 
-import groovy.json.JsonSlurper
+import java.text.DateFormatSymbols
 import org.reactome.release.jenkins.utilities.Utilities
 
 // Shared library maintained at 'release-jenkins-utils' repository.
@@ -15,12 +15,26 @@ pipeline {
 	}
 	
 	stages{
-	    stage('Checkout') {
-            steps {
-                // Get some code from a GitHub repository
-                git branch: 'feature/jenkins-integration', url: 'https://github.com/reactome/wikidata-exporter.git'
-            }
-        }
+		stage('User Input: Get release news URL'){
+		    steps{
+				script{
+					def releaseVersion = utils.getReleaseVersion()
+					def baseReleaseNewsURL = "https://reactome.org/about/news/"
+					def userInputReleaseNewsURL = input(
+					id: 'userInput', message: "Please paste the URL to Reactome's release announcement for v${releaseVersion} below.",
+					parameters: [
+						[$class: 'TextParameterDefinition', description: "News items can be found at found at ${baseReleaseNewsURL}", name: 'response']
+					])
+
+					if (userInputReleaseNewsURL.contains("${baseReleaseNewsURL}")) {
+						echo("Valid URL submitted. Running Wikidata Exporter step now.")
+						env.RELEASE_NEWS_URL = "${userInputReleaseNewsURL}"
+					} else {
+						error("Invalid URL. Please submit proper URL corresponding to Reactome's v${releaseVersion} release found at ${baseReleaseNewsURL}.")
+					}
+				}
+		    }
+		}
         stage('Setup: Clone Wikidata Bot repository') {
             steps{
                 script{
@@ -53,9 +67,15 @@ pipeline {
 		stage('Main: Run R-Wikidata-Bot') {
 		    steps{
 		        script{
-        		    dir("r-wikidata-bot") {
-        		        sh "python3 -m pipenv run python bot.py -d ${env.EXPORTER_OUTPUT_FOLDER} -rnews https://reactome.org/about/news/sample_news_link -rday 11 -rmonth June -ryear 2020"
-        		    }
+		            withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+		              def releaseDate = getReleaseDateFromConfigFile("${ConfigFile}")
+		              def releaseYear = "${releaseDate}".split("-")[0]
+		              def releaseMonth = getReleaseMonthName("${releaseDate}".split("-")[1].toInteger())
+		              def releaseDay = "${releaseDate}".split("-")[2]
+        		      dir("r-wikidata-bot") {
+        		          sh "python3 -m pipenv run python bot.py -d ${env.EXPORTER_OUTPUT_FOLDER} -rnews ${env.RELEASE_NEWS_URL} -rday ${releaseDay} -rmonth ${releaseMonth} -ryear ${releaseYear} --fastrun" //--write
+            		    }
+		            }
 		        }
 		    }
 		}
@@ -64,4 +84,17 @@ pipeline {
 
 def getOutputFolderPath() {
     return pwd() + "/data/"
+}
+
+def getReleaseDateFromConfigFile(configFile) {
+    def releaseDate = sh (
+            script: "grep dateOfRelease $configFile | cut -d = -f2",
+            returnStdout: true
+            ).trim()
+    return releaseDate
+}
+
+def getReleaseMonthName(releaseMonthNumber) {
+    releaseMonthNumber--
+    return new DateFormatSymbols().getMonths()[releaseMonthNumber]
 }
