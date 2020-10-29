@@ -27,7 +27,7 @@ pipeline {
 					])
 
 					if (userInputReleaseNewsURL.contains("${baseReleaseNewsURL}")) {
-						echo("Valid URL submitted. Running Wikidata Exporter step now.")
+						echo("Valid URL submitted: ${userInputReleaseNewsURL} . Running Wikidata Exporter step now.")
 						env.RELEASE_NEWS_URL = "${userInputReleaseNewsURL}"
 					} else {
 						error("Invalid URL. Please submit proper URL corresponding to Reactome's v${releaseVersion} release found at ${baseReleaseNewsURL}.")
