@@ -23,6 +23,11 @@
 
     <developers>
         <developer>
+            <id>skeating</id>
+            <name>Sarah Keating</name>
+            <email>skeating@ebi.ac.uk</email>
+        </developer>
+        <developer>
             <id>yhaider</id>
             <name>Yusra Haider</name>
             <email>yhaiderebi.ac.uk</email>
