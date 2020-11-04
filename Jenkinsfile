@@ -1,6 +1,5 @@
 // This Jenkinsfile is used by Jenkins to run the WikidataExporter step of Reactome's release.
 
-import java.text.DateFormatSymbols
 import org.reactome.release.jenkins.utilities.Utilities
 
 // Shared library maintained at 'release-jenkins-utils' repository.
@@ -148,7 +147,7 @@ def runWikidataBot(configFile, writeMode) {
 	def releaseDate = getReleaseDateFromConfigFile("${configFile}")
 	def releaseYear = "${releaseDate}".split("-")[0]
 	// The rmonth argument needs a text version of the month, so this method just converts the integer value to the name value.
-	def releaseMonth = getReleaseMonthName("${releaseDate}".split("-")[1].toInteger())
+	def releaseMonth = "${releaseDate}".split("-")[1]
 	def releaseDay = "${releaseDate}".split("-")[2]
 	
 	def wikidataCmd = "python3 -m pipenv run python bot.py -d ${env.EXPORTER_OUTPUT_FOLDER} -rnews ${env.RELEASE_NEWS_URL} -rday ${releaseDay} -rmonth ${releaseMonth} -ryear ${releaseYear} --fastrun"
@@ -168,11 +167,4 @@ def getReleaseDateFromConfigFile(configFile) {
 		returnStdout: true
 	).trim()
 	return releaseDate
-}
-
-// Uses DateFormatSymbol 'getMonths()' method to get month name. 
-def getReleaseMonthName(releaseMonthNumber) {
-	// Zero-based indexing means the nth month is actually the nth-1 month!
-	releaseMonthNumber--
-	return new DateFormatSymbols().getMonths()[releaseMonthNumber]
 }
