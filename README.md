@@ -2,9 +2,9 @@
 
 ## WikidataExport
 
-This is the sister code of the [r-wikidata-bot](https://github.com/reactome/r-wikidata-bot) and creates the required csv files from the Reactome Graph Database.
+This is the sister code of the [r-wikidata-bot](https://github.com/reactome/r-wikidata-bot) and creates the required json files from the Reactome Graph Database.
 
-## Code
+### Code
 
 The code is written in Java and uses the [Graph Database](http://www.reactome.org/pages/documentation/developer-guide/graph-database/) and corresponding API. 
 
@@ -18,117 +18,75 @@ The following arguments are required
 -b "port"      The neo4j port
 -u "user"      The neoj4 username
 -p "password"  The neo4j password
--o "outdir"    The directory where output files will be written
+-o "outputdirectory"    The directory where output files will be written
 ```
-
 
 ### Output
 
-Four csv files are written:
-- hsa\_pathway\_data.csv
-- hsa\_reaction\_data.csv
-- hsa\_entity\_data.csv
-- hsa\_modprot\_data.csv
+Five json files are written:
+- pathway.json : has all the pathways
+- reaction.json : has all the reactions
+- physicalEntity.json : has all the physical entities
+- modifiedProtein.json : has all the modified proteins
+- parent.json : has all the child-parent links
 
 
-These files are read in by the sister code r-wikidata-bot and used to populate/update wikidata entries.
+These files are read in by the sister code r-wikidata-bot and used to populate/update Reactome data in Wikidata.
+
+### Current Functionality and Limitations
+- The code currently only exports top level pathways (and their children) belonging to the Homo sapiens species
+
+- The code exports Pathway, ReactionLikeEvent, Complex & EntitySet and modified proteins (EntityWithAccessionedSequence 
+that have modified residues) as Reactome entities in the files pathway.json, reaction.json, physicalEntity.json and modifiedProtein.json 
+respectively.
+
+- The above entities may have children / parts that are not exported as Reactome entities. So for example, 
+a Complex could have a SimpleEntity as a component, an EntitySet could have an EntityWithAccessionedSequence
+without modified residues, or a Drug as a member. Modified proteins have modified residues that don’t belong
+to Reactome database. Currently, the code for the project can handle and link to such parts / children where 
+the external database is UniProt or ChEBI, provided that part from a non-Reactome source already exists in Wikidata. 
+This then includes SimpleEntity and EntityWithAccessionedSequence without modified residues where the ChEBI and UniProt
+identifiers are specified
+
+- The fifth file parent.json records child-parent links allowing each Reactome entry in Wikidata to be linked back to its
+parents
+
+- The code doesn't currently support export of Drug, Polymer, and OtherEntity
+
+- The code exports `components` as parts of complexes, `members` as parts of the entity set
+  and modified residues falling under `TranslationalModification` and `ReplacedResidue` as parts of modified proteins. 
+  `candidates` for CandidateSet, and other types of modified residues are not being exported
+
+### Prerequisites
+
+- [Reactome Graph Database](http://www.reactome.org/dev/graph-database/) must be up and running before executing 
+the wikidata-exporter
 
 
-## Limitations
-
-Currently the code only supports the Homo sapiens species. This is hard coded at present but commented out code will facilitate adding other species in the future.
-Polymers and Chemical Drugs are not yet supported by Wikidata and export of these does not yet happen.
-
-
----
-
-## RELEASE
-
-### PREREQUISITES
-
-
-1. You must have [Reactome Graph Database](http://www.reactome.org/dev/graph-database/) up and running before executing the wikidata-exporter
-2. You must have Python v3 with [WikidataIntegrator](https://github.com/SuLab/WikidataIntegrator) installed before executing the r-wikidata-bot
-
-#### STEP ONE: Export from Reactome
-
-**NOTE: You made need to update the pom.xml file in the wikidata-exporter project if the graph-core has moved beyond version 1.1.10**
+### Exporting data from Reactome
 
 1. Cloning and packaging the wikidata-exporter project
 
-```console
-git clone https://github.com/reactome/wikidata-exporter.git
-cd wikidata-exporter
-mvn clean package
-```
+    ```console
+    git clone https://github.com/reactome/wikidata-exporter.git
+    cd wikidata-exporter
+    mvn clean package
+    ```
+   
+2. Generating .json files
 
-2. Generating .csv files
-
-```console
-mkdir outputdir
-java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -o outputdir
-```
-
-This step may take up to 10 minutes.
-
+    ```console
+    mkdir data
+    java -jar target/wikidata-exporter-jar-with-dependencies.jar -h localhost -b 7474 -u user -p not4share -o data
+    ```
+    This step may take up to 10 minutes.
+    
 3. Verification
 
-Check that the outputdir has the 4 csv files mentioned above.
+    The specified outputdirectory should have the 5 json files mentioned above.
 
-Inspect the file wikidata-exporter/WikidataExporter.log. Files in the wikidata-exporter/dev directory expand on what errors or warnings might be issued and how to deal with them.
+    The wikidata-exporter/WikidataExporter.log file has the logs for the project. 
 
-NOTE: If there are only warnings it is safe to proceed without correcting them.
-
-4. Change directory
-
-```console
-cd ..
-```
-
-#### STEP TWO: Import to Wikidata
-
-1. Clone the r-wikidata-bot project
-
-```console
-git clone https://github.com/reactome/r-wikidata-bot.git
-cd r-wikidata-bot
-```
-
-2. Move the .csv files
-
-```console
-mkdir inputdir
-cp ../wikidata-exporter/outputdir/*.csv ./inputdir/*
-```
-
-3. Update the release_info.txt file
-
-This file contains the specifics of *this* release in a format that the code expects. Do NOT change the format, merely change the data. See [r-wikidata-bot/dev/release_info.md](https://github.com/reactome/r-wikidata-bot/blob/master/dev/release_info.md)
-
-
-
-
-4. Run the import
-
-Note: This bot should only be run under the 'Pathwaybot' wikidata account.
-
-```console
-python update_wikidata.py
-```
-
-
-***Note: This may take several hours. Maybe as much as 10-12 hours - I'm not joking! Hopefully I have speeded that up. ***
-
-
-5. Verification
-
-Inspect file r-wikidata-bot/logs/WD_bot_run_TIMESTAMP.log. This is the log file generated by interactions with wikidata. It logs any issue as an error but the only one that is a major problem is an http timeout. This would suggest the process needs to be re-run.
-
-Inspect the file r-wikidata-bot/logs/wikidata_update_DATE_final.csv. This lists entries that could not be linked. See [r-wikidata-bot/dev/missing_info.md](https://github.com/reactome/r-wikidata-bot/blob/master/dev/missing_info.md) for details on where to report particular issues.
-
-Check that https://www.wikidata.org/wiki/Q2134522 contains the publication date of this release with the correct reference.
-
-Randomly check entries made - see the csv log files.
 
 
 
