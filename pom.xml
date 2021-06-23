@@ -15,8 +15,8 @@
     <url>https://github.com/reactome/wikidata-exporter</url>
 
     <organization>
-        <name>The European Bioinformatics Institute</name>
-        <url>https://www.ebi.ac.uk</url>
+        <name>Reactome</name>
+        <url>https://reactome.org</url>
     </organization>
 
     <licenses>
@@ -38,7 +38,7 @@
         <developer>
             <id>yhaider</id>
             <name>Yusra Haider</name>
-            <email>yhaiderebi.ac.uk</email>
+            <email>yhaider@ebi.ac.uk</email>
             <organization>The European Bioinformatics Institute</organization>
             <organizationUrl>https://www.ebi.ac.uk/</organizationUrl>
             <roles>
@@ -55,11 +55,11 @@
 
     <properties>
         <!-- dependencies -->
-        <graph.core>1.1.21</graph.core>
         <log4j.api.version>2.13.2</log4j.api.version>
         <log4j.core.version>2.3</log4j.core.version>
         <jasp.version>2.1</jasp.version>
         <junit.version>4.12</junit.version>
+        <reactome.graph.core>1.1.21</reactome.graph.core>
 
         <!-- build -->
         <jdk.version>1.8</jdk.version>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>${graph.core}</version>
+            <version>${reactome.graph.core}</version>
         </dependency>
 
         <dependency>
@@ -240,6 +240,7 @@
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
                     <goals>deploy</goals>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
 
