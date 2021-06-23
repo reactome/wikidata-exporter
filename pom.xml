@@ -59,7 +59,7 @@
         <log4j.core.version>2.3</log4j.core.version>
         <jasp.version>2.1</jasp.version>
         <junit.version>4.12</junit.version>
-        <reactome.graph.core>1.1.21</reactome.graph.core>
+        <reactome.graph.core.version>1.1.21</reactome.graph.core.version>
 
         <!-- build -->
         <jdk.version>1.8</jdk.version>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>${reactome.graph.core}</version>
+            <version>${reactome.graph.core.version}</version>
         </dependency>
 
         <dependency>
