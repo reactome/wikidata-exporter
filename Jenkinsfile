@@ -41,8 +41,6 @@ pipeline {
                 		script{
                     			utils.cloneOrUpdateLocalRepo("r-wikidata-bot")
                     			dir("r-wikidata-bot") {
-////TODO:					Before merging this branch into develop, the below line needs to be removed!
-                        			sh "git checkout origin/feature-revamp-bot"
                         			sh "python3 -m pipenv install --ignore-pipfile"
                     			}
                 		}
