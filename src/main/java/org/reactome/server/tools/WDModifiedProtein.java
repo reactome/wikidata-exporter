@@ -68,8 +68,9 @@ public class WDModifiedProtein extends WDReactome {
                     for (PsiMod psiMod : psiMods) {
                         residues.add(new WDLinks(psiMod.getDatabaseName() + ":" + psiMod.getIdentifier(), psiMod.getDatabaseName(), coordinate));
                     }
+                } else {
+                    log.warn("modified residue not being exported: " + m.getDisplayName());
                 }
-                log.warn("modified residue not being exported: " + m.getDisplayName());
             }
         }
         return residues;
