@@ -23,26 +23,30 @@ public class WDLinks implements Serializable {
     public WDLinks(DatabaseObject databaseObject, Integer qty) {
         this.qty = qty;
 
-        if (databaseObject instanceof Event || databaseObject instanceof CandidateSet || databaseObject instanceof DefinedSet || databaseObject instanceof Complex) {
+        if (databaseObject instanceof Event || databaseObject instanceof PhysicalEntity) {
             this.id = databaseObject.getStId();
             this.idType = "REACTOME";
 
-        } else if (databaseObject instanceof SimpleEntity) {
-            ReferenceMolecule ref = ((SimpleEntity) databaseObject).getReferenceEntity();
-            if (ref != null) {
-                this.id = ref.getIdentifier();
-                this.idType = ref.getDatabaseName();
-            }
-        } else if (databaseObject instanceof EntityWithAccessionedSequence) {
-            List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) databaseObject).getHasModifiedResidue();
-            if (mods != null && mods.size() > 0) {
-                this.idType = "REACTOME";
-                this.id = databaseObject.getStId();
-            } else {
-                ReferenceSequence ref = ((EntityWithAccessionedSequence) databaseObject).getReferenceEntity();
+            if (databaseObject instanceof SimpleEntity) {
+                ReferenceMolecule ref = ((SimpleEntity) databaseObject).getReferenceEntity();
                 if (ref != null) {
-                    this.idType = ref.getDatabaseName();
                     this.id = ref.getIdentifier();
+                    this.idType = ref.getSimplifiedDatabaseName();
+                }
+            } else if (databaseObject instanceof Drug) {
+                ReferenceTherapeutic ref = ((Drug) databaseObject).getReferenceEntity();
+                if (ref != null) {
+                    this.id = ref.getIdentifier();
+                    this.idType = ref.getSimplifiedDatabaseName();
+                }
+            } else if (databaseObject instanceof EntityWithAccessionedSequence) {
+                List<AbstractModifiedResidue> mods = ((EntityWithAccessionedSequence) databaseObject).getHasModifiedResidue();
+                if (mods == null || mods.isEmpty()) {
+                    ReferenceSequence ref = ((EntityWithAccessionedSequence) databaseObject).getReferenceEntity();
+                    if (ref != null) {
+                        this.idType = ref.getSimplifiedDatabaseName();
+                        this.id = ref.getIdentifier();
+                    }
                 }
             }
         }
