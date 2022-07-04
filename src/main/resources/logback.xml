@@ -19,8 +19,11 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="importLogger" level="WARN" additivity="false">
+    <logger name="org.reactome.server.tools" level="WARN" additivity="false">
         <appender-ref ref="importFileAppender"/>
+    </logger>
+    <logger name="org.reactome.server.tools" level="INFO">
+        <appender-ref ref="STDOUT"/>
     </logger>
 
     <!-- Setting up neo4j and sdn logging to ERROR -->
