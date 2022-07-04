@@ -61,7 +61,7 @@ pipeline {
 				script{
 					sh "mkdir -p ${env.EXPORTER_OUTPUT_FOLDER}"
 					withCredentials([usernamePassword(credentialsId: 'neo4jUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
-						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/wikidata-exporter-jar-with-dependencies.jar --user ${user} --password ${pass} --outputdirectory ${env.EXPORTER_OUTPUT_FOLDER}"
+						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/wikidata-exporter-exec.jar --user ${user} --password ${pass} --outputdirectory ${env.EXPORTER_OUTPUT_FOLDER}"
 					}
 				}
 			}

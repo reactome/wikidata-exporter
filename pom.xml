@@ -4,7 +4,7 @@
 
     <groupId>org.reactome.server.tools</groupId>
     <artifactId>wikidata-exporter</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>wikidata-exporter</name>
@@ -12,13 +12,20 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jdk.version>11</jdk.version>
+        <main.class>org.reactome.server.tools.Export</main.class>
 
-        <graph.core>1.1.21</graph.core>
+        <graph.core>2.0.4</graph.core>
         <jasp.version>2.1</jasp.version>
 
-        <maven.compiler.version>3.5.1</maven.compiler.version>
-        <jdk.version>1.8</jdk.version>
-        <junit.version>4.12</junit.version>
+        <log4j.version>2.17.2</log4j.version>
+        <junit.version>5.8.2</junit.version>
+
+        <spring.boot.version>2.6.7</spring.boot.version>
+        <maven.compiler.version>3.8.1</maven.compiler.version>
+        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
+        <maven.jar.version>3.2.0</maven.jar.version>
+        <jackson.version>2.13.3</jackson.version>
     </properties>
 
     <developers>
@@ -44,15 +51,21 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.3</version>
+            <version>${log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
-            <version>2.13.2</version>
+            <version>${log4j.version}</version>
         </dependency>
 
 
@@ -64,29 +77,38 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
+        <finalName>${project.name}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>${maven-jar-plugin.version}</version>
                 <executions>
                     <execution>
+                        <id>exec-jar</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>default-jar</id>
-                        <phase>install</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                         <configuration>
                             <excludes>
-                                <exclude>org/reactome/server/tools/config/GraphNeo4jConfig.class</exclude>
+                                <exclude>org/reactome/server/analysis/core/config/GraphNeo4jConfig.class</exclude>
                                 <exclude>**/logback.xml</exclude>
                             </excludes>
                         </configuration>
@@ -104,27 +126,18 @@
                 </configuration>
             </plugin>
 
-            <!-- Generate jar with dependencies -->
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.0.0</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.reactome.server.tools.Export</mainClass>
-                        </manifest>
-                    </archive>
-                    <finalName>wikidata-exporter</finalName>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <mainClass>org.reactome.server.tools.Export</mainClass>
+                    <classifier>exec</classifier>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
                         <goals>
-                            <goal>single</goal>
+                            <goal>repackage</goal>
                         </goals>
                     </execution>
                 </executions>

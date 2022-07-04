@@ -35,10 +35,9 @@ public class Export {
 
         SimpleJSAP jsap = new SimpleJSAP(Export.class.getName(), "A tool to export data for Wikidata",
                 new Parameter[]{
-                        new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.REQUIRED, 'h', "host", "The neo4j host"),
-                        new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.NOT_REQUIRED, 'b', "port", "The neo4j port"),
+                        new FlaggedOption("host", JSAP.STRING_PARSER, "bolt://localhost:7687", JSAP.REQUIRED, 'h', "host", "The neo4j host"),
                         new FlaggedOption("user", JSAP.STRING_PARSER, "neo4j", JSAP.REQUIRED, 'u', "user", "The neo4j user"),
-                        new FlaggedOption("password", JSAP.STRING_PARSER, "reactome", JSAP.REQUIRED, 'p', "password", "The neo4j password"),
+                        new FlaggedOption("password", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'p', "password", "The neo4j password"),
                         new FlaggedOption("outputdirectory", JSAP.STRING_PARSER, ".", JSAP.REQUIRED, 'o', "outputdirectory", "The output directory")
                 }
         );
@@ -46,7 +45,7 @@ public class Export {
         JSAPResult config = jsap.parse(args);
         if (jsap.messagePrinted()) System.exit(1);
 
-        ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), GraphNeo4jConfig.class);
+        ReactomeGraphCore.initialise(config.getString("host"), config.getString("user"), config.getString("password"), GraphNeo4jConfig.class);
 
         DatabaseObjectService databaseObjectService = ReactomeGraphCore.getService(DatabaseObjectService.class);
         SchemaService schemaService = ReactomeGraphCore.getService(SchemaService.class);
