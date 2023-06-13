@@ -2,6 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.reactome.maven</groupId>
+        <artifactId>reactome-pwp-parent</artifactId>
+        <version>1.0.3-SNAPSHOT</version>
+    </parent>
+
     <groupId>org.reactome.server.tools</groupId>
     <artifactId>wikidata-exporter</artifactId>
     <version>1.1.0</version>
@@ -14,18 +20,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>11</jdk.version>
         <main.class>org.reactome.server.tools.Export</main.class>
-
-        <graph.core>2.0.4</graph.core>
-        <jasp.version>2.1</jasp.version>
-
-        <log4j.version>2.17.2</log4j.version>
-        <junit.version>5.8.2</junit.version>
-
-        <spring.boot.version>2.6.7</spring.boot.version>
-        <maven.compiler.version>3.8.1</maven.compiler.version>
-        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
-        <maven.jar.version>3.2.0</maven.jar.version>
-        <jackson.version>2.13.3</jackson.version>
     </properties>
 
     <developers>
@@ -47,25 +41,21 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>${graph.core}</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
 
 
@@ -73,13 +63,11 @@
         <dependency>
             <groupId>com.martiansoftware</groupId>
             <artifactId>jsap</artifactId>
-            <version>${jasp.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
