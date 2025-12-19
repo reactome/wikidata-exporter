@@ -18,7 +18,7 @@
         <graph.core>2.0.4</graph.core>
         <jasp.version>2.1</jasp.version>
 
-        <log4j.version>2.17.2</log4j.version>
+        <log4j.version>2.25.3</log4j.version>
         <junit.version>5.8.2</junit.version>
 
         <spring.boot.version>2.6.7</spring.boot.version>
